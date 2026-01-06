@@ -373,7 +373,7 @@ loadBank();
 // Большие ставки: мгновенный слив если не может выплатить
 // ============================================
 
-const TARGET_BANK = 1000000; // Цель - 1 миллион
+// TARGET_BANK теперь в CASINO_CONFIG
 let roundCounter = 0;
 let startupRounds = 0; // Счётчик раундов при старте с нуля
 let lastGiveawayRound = 0; // Последний раунд когда отдавали деньги
@@ -427,226 +427,193 @@ function getMaxAffordableMultiplier(betAmount) {
 }
 
 /**
- * ГЛАВНАЯ ФУНКЦИЯ: РАСЧЁТ CRASH POINT
- * Схема:
- * 1. Банк = 0: первые 2 раунда 1.00x, потом 2 раунда 1.05-1.09x
- * 2. Большие ставки (не можем выплатить): слив 1.00-1.03x
- * 3. Шанс 12%: отдать 7-8% от банка
- * 4. Шанс 5-7%: отдать 10-11% от банка
- * 5. Остальное: копим (слив 1.00-1.50x)
+ * ГЛАВНЫЙ АЛГОРИТМ - ДИНАМИЧЕСКИЙ РАСЧЕТ CRASH POINT
+ * Рассчитать crash point В ПОСЛЕДНИЙ МОМЕНТ
+ * Вызывается ПОСЛЕ окончания приема ставок
  */
-function calculateSmartCrashPoint(bets) {
+function calculateDynamicCrashPoint(bets) {
   roundCounter++;
+  const phase = getCurrentPhase();
+  const analysis = analyzeBets(bets);
   
-  const betAnalysis = analyzeBets(bets);
-  const { totalBets, betCount, maxBet, betList } = betAnalysis;
+  console.log(`\n🎰 ════════════════════════════════════════`);
+  console.log(`   РАУНД #${roundCounter} | ФАЗА: ${phase}`);
+  console.log(`   💰 Банк: ${houseBank.toFixed(0)} / ${CASINO_CONFIG.TARGET_BANK.toLocaleString()} (${(houseBank / CASINO_CONFIG.TARGET_BANK * 100).toFixed(1)}%)`);
+  console.log(`   💵 Ставок: ${analysis.totalBets.toFixed(0)} (${analysis.betCount} игроков)`);
+  console.log(`   📊 RTP: ${stats.currentRTP.toFixed(2)}%`);
   
-  console.log(`\n🎰 ========== РАУНД #${roundCounter} ==========`);
-  console.log(`   💵 Ставок: ${totalBets} (${betCount} игроков)`);
-  console.log(`   💰 Банк: ${houseBank} / ${TARGET_BANK} (${(houseBank/TARGET_BANK*100).toFixed(2)}%)`);
-  
-  // Если ставок нет - красивый рандомный crash для зрелищности
-  if (totalBets === 0) {
-    const showCrash = 1.0 + Math.random() * 9.0; // 1.0-10.0x для шоу
-    console.log(`   🎭 Нет ставок - шоу crash: ${showCrash.toFixed(2)}x`);
-    return parseFloat(showCrash.toFixed(2));
-  }
-  
-  // ============================================
-  // РЕЖИМ 1: СТАРТ С НУЛЯ (банк = 0 или очень мало)
-  // ============================================
-  if (houseBank < 100) {
-    startupRounds++;
+  // ═══════════════════════════════════════════════════════════
+  // РЕЖИМ 1: НЕТ СТАВОК - ПОКАЗАТЕЛЬНЫЙ РАУНД (РАЗНООБРАЗИЕ)
+  // ═══════════════════════════════════════════════════════════
+  if (analysis.totalBets === 0 || analysis.betCount === 0) {
+    const config = CASINO_CONFIG.SHOWCASE;
+    let showcaseMultiplier;
+    const roll = Math.random();
     
-    if (startupRounds <= 2) {
-      // Первые 2 раунда - жёсткий слив 1.00x
-      console.log(`   🚨 СТАРТ: Раунд ${startupRounds}/2 - слив 1.00x`);
-      return 1.00;
-    } else if (startupRounds <= 4) {
-      // Раунды 3-4 - мягкий слив 1.05-1.09x
-      const softCrash = 1.05 + Math.random() * 0.04;
-      console.log(`   🚨 СТАРТ: Раунд ${startupRounds}/4 - слив ${softCrash.toFixed(2)}x`);
-      return parseFloat(softCrash.toFixed(2));
-    }
-    // После 4 раундов - обычный режим накопления
-  } else {
-    startupRounds = 0; // Сбрасываем счётчик когда банк > 100
-  }
-  
-  // ============================================
-  // РЕЖИМ 2: ПРОВЕРКА БОЛЬШИХ СТАВОК
-  // Если есть ставка которую не можем выплатить даже на 2x - мгновенный слив
-  // ============================================
-  const maxAffordable = getMaxAffordableMultiplier(maxBet);
-  
-  if (maxAffordable < 2.0) {
-    // Не можем выплатить даже 2x на максимальную ставку - СЛИВ!
-    const instantCrash = 1.00 + Math.random() * 0.03; // 1.00-1.03x
-    console.log(`   🐋 БОЛЬШАЯ СТАВКА! Макс: ${maxBet}, можем выплатить только ${maxAffordable.toFixed(2)}x`);
-    console.log(`   ⚡ Мгновенный слив: ${instantCrash.toFixed(2)}x`);
-    return parseFloat(instantCrash.toFixed(2));
-  }
-  
-  // ============================================
-  // РЕЖИМ 2.5: ПОСТЕПЕННАЯ ОТДАЧА 60% БОЛЬШОГО ВЫИГРЫША
-  // ============================================
-  if (isGiveawayMode && giveawayRoundsLeft > 0) {
-    // Отдаём часть накопленного выигрыша
-    const giveawayPerRound = bigWinAmount * 0.6 / 5; // Отдаём за 5 раундов
-    const giveawayAmount = Math.min(giveawayPerRound, bigWinAmount * 0.6);
-    
-    // Рассчитываем crash который отдаст эту сумму
-    let giveawayCrash = (giveawayAmount + totalBets) / totalBets;
-    giveawayCrash = Math.min(giveawayCrash, maxAffordable * 0.95);
-    giveawayCrash = Math.max(1.5, giveawayCrash);
-    
-    giveawayRoundsLeft--;
-    bigWinAmount -= giveawayAmount;
-    
-    if (giveawayRoundsLeft === 0) {
-      isGiveawayMode = false;
-      // Если игроки лудятся (много ставок) - включаем режим слива
-      if (totalBets > houseBank * 0.1) {
-        isDrainMode = true;
-        drainRoundsLeft = 3; // Сливаем 3 раунда по 1x
-        console.log(`   🎰 Игроки лудятся! Включаем режим слива на 3 раунда`);
-      }
-    }
-    
-    console.log(`   💰 ПОСТЕПЕННАЯ ОТДАЧА: ${giveawayAmount.toFixed(0)} (осталось ${giveawayRoundsLeft} раундов)`);
-    console.log(`   🎁 Giveaway crash: ${giveawayCrash.toFixed(2)}x`);
-    return parseFloat(giveawayCrash.toFixed(2));
-  }
-  
-  // ============================================
-  // РЕЖИМ 2.6: СЛИВ ПОСЛЕ ОТДАЧИ (если игроки лудятся)
-  // ============================================
-  if (isDrainMode && drainRoundsLeft > 0) {
-    drainRoundsLeft--;
-    if (drainRoundsLeft === 0) {
-      isDrainMode = false;
-    }
-    console.log(`   🚨 РЕЖИМ СЛИВА: ${drainRoundsLeft} раундов осталось`);
-    return 1.00; // Жёсткий слив 1.00x
-  }
-  
-  // ============================================
-  // РЕЖИМ 3: РАНДОМНАЯ УДАЧА (отдаём процент банка)
-  // ============================================
-  const luckRoll = Math.random() * 100; // 0-100
-  const roundsSinceGiveaway = roundCounter - lastGiveawayRound;
-  
-  // Увеличиваем шанс удачи если давно не отдавали (макс +5%)
-  const bonusChance = Math.min(5, roundsSinceGiveaway * 0.5);
-  
-  // Шанс 20% (+бонус): отдать 7-8% от банка (увеличено с 12%)
-  if (luckRoll < 20 + bonusChance) {
-    const giveawayPercent = 7 + Math.random(); // 7-8%
-    const giveawayAmount = houseBank * (giveawayPercent / 100);
-    
-    // Рассчитываем crash который отдаст этот процент
-    // giveawayAmount = totalBets * crash - totalBets
-    // crash = (giveawayAmount + totalBets) / totalBets
-    let luckyCrash = (giveawayAmount + totalBets) / totalBets;
-    
-    // Ограничиваем тем что можем выплатить
-    luckyCrash = Math.min(luckyCrash, maxAffordable * 0.95);
-    luckyCrash = Math.max(1.5, luckyCrash); // Минимум 1.5x для "удачи"
-    
-    // Ограничиваем максимум 5x для одного игрока
-    const maxMultForBet = Math.min(5.0, (houseBank * 0.08 + maxBet) / maxBet);
-    luckyCrash = Math.min(luckyCrash, maxMultForBet);
-    
-    lastGiveawayRound = roundCounter;
-    console.log(`   🍀 УДАЧА! Отдаём ${giveawayPercent.toFixed(1)}% банка (${giveawayAmount.toFixed(0)})`);
-    console.log(`   🎁 Lucky crash: ${luckyCrash.toFixed(2)}x`);
-    return parseFloat(luckyCrash.toFixed(2));
-  }
-  
-  // Шанс 10% (+бонус): отдать 10-11% от банка (БОЛЬШАЯ УДАЧА) (увеличено с 6%)
-  if (luckRoll < 20 + 10 + bonusChance) { // 20 + 10 = 30% суммарно (но 10% это большая удача)
-    const bigGiveawayPercent = 10 + Math.random(); // 10-11%
-    const bigGiveawayAmount = houseBank * (bigGiveawayPercent / 100);
-    
-    let bigLuckyCrash = (bigGiveawayAmount + totalBets) / totalBets;
-    bigLuckyCrash = Math.min(bigLuckyCrash, maxAffordable * 0.95);
-    bigLuckyCrash = Math.max(2.0, bigLuckyCrash); // Минимум 2.0x для большой удачи
-    
-    // Ограничиваем максимум 5x для одного игрока
-    const maxMultForBet = Math.min(5.0, (houseBank * 0.11 + maxBet) / maxBet);
-    bigLuckyCrash = Math.min(bigLuckyCrash, maxMultForBet);
-    
-    lastGiveawayRound = roundCounter;
-    console.log(`   🌟 БОЛЬШАЯ УДАЧА! Отдаём ${bigGiveawayPercent.toFixed(1)}% банка (${bigGiveawayAmount.toFixed(0)})`);
-    console.log(`   💎 Big lucky crash: ${bigLuckyCrash.toFixed(2)}x`);
-    return parseFloat(bigLuckyCrash.toFixed(2));
-  }
-  
-  // ============================================
-  // РЕЖИМ 4: НАКОПЛЕНИЕ (основной режим ~70% времени)
-  // Менее палевно - чаще доходит до 2-3x
-  // ============================================
-  let collectCrash;
-  const collectRoll = Math.random();
-  
-  if (houseBank < 10000) {
-    // Банк маленький - но всё равно доходим до 2-3x
-    if (collectRoll < 0.3) {
-      collectCrash = 1.20 + Math.random() * 0.30; // 30%: 1.20-1.50x
-    } else if (collectRoll < 0.6) {
-      collectCrash = 1.50 + Math.random() * 0.50; // 30%: 1.50-2.00x
-    } else if (collectRoll < 0.85) {
-      collectCrash = 2.00 + Math.random() * 0.80; // 25%: 2.00-2.80x
+    // Выбираем диапазон на основе вероятностей
+    if (roll < config.LOW.chance) {
+      // 35% - Низкие множители (1.50-3.40x)
+      const [min, max] = config.LOW.range;
+      showcaseMultiplier = min + Math.random() * (max - min);
+      console.log(`   🎲 НЕТ СТАВОК - Показательный LOW: ${showcaseMultiplier.toFixed(2)}x`);
+    } else if (roll < config.LOW.chance + config.MEDIUM.chance) {
+      // 35% - Средние множители (3.40-10.0x)
+      const [min, max] = config.MEDIUM.range;
+      showcaseMultiplier = min + Math.random() * (max - min);
+      console.log(`   🎭 НЕТ СТАВОК - Показательный MEDIUM: ${showcaseMultiplier.toFixed(2)}x`);
     } else {
-      collectCrash = 2.80 + Math.random() * 0.70; // 15%: 2.80-3.50x
+      // 30% - Высокие множители (10.0-50.0x)
+      const [min, max] = config.HIGH.range;
+      showcaseMultiplier = min + Math.random() * (max - min);
+      console.log(`   🌟 НЕТ СТАВОК - Показательный HIGH: ${showcaseMultiplier.toFixed(2)}x`);
     }
-    console.log(`   💼 НАКОПЛЕНИЕ (низкий банк): ${collectCrash.toFixed(2)}x`);
     
-  } else if (houseBank < 100000) {
-    // Банк средний - чаще до 2-3x
-    if (collectRoll < 0.25) {
-      collectCrash = 1.30 + Math.random() * 0.40; // 25%: 1.30-1.70x
-    } else if (collectRoll < 0.5) {
-      collectCrash = 1.70 + Math.random() * 0.60; // 25%: 1.70-2.30x
-    } else if (collectRoll < 0.75) {
-      collectCrash = 2.30 + Math.random() * 0.70; // 25%: 2.30-3.00x
-    } else {
-      collectCrash = 3.00 + Math.random() * 1.00; // 25%: 3.00-4.00x
-    }
-    console.log(`   💼 НАКОПЛЕНИЕ (средний банк): ${collectCrash.toFixed(2)}x`);
-    
-  } else {
-    // Банк большой - часто до 2-4x
-    if (collectRoll < 0.2) {
-      collectCrash = 1.50 + Math.random() * 0.50; // 20%: 1.50-2.00x
-    } else if (collectRoll < 0.5) {
-      collectCrash = 2.00 + Math.random() * 0.80; // 30%: 2.00-2.80x
-    } else if (collectRoll < 0.8) {
-      collectCrash = 2.80 + Math.random() * 0.90; // 30%: 2.80-3.70x
-    } else {
-      collectCrash = 3.70 + Math.random() * 1.30; // 20%: 3.70-5.00x
-    }
-    console.log(`   💼 НАКОПЛЕНИЕ (большой банк): ${collectCrash.toFixed(2)}x`);
+    console.log(`🎰 ════════════════════════════════════════\n`);
+    return parseFloat(showcaseMultiplier.toFixed(2));
   }
   
-  // Проверяем что можем выплатить
-  if (collectCrash > maxAffordable * 0.95) {
-    collectCrash = maxAffordable * 0.9;
-    console.log(`   ⚠️ Ограничено до ${collectCrash.toFixed(2)}x (защита банка)`);
+  // С этого момента есть ставки - считаем раунды со ставками
+  roundsWithBetsCounter++;
+  
+  // ═══════════════════════════════════════════════════════════
+  // РЕЖИМ 2: СТАРТОВАЯ ФАЗА (первые 7 раундов СО СТАВКАМИ)
+  // ═══════════════════════════════════════════════════════════
+  if (!startupRoundsComplete && roundsWithBetsCounter <= CASINO_CONFIG.STARTUP_PHASE.ROUNDS_WITH_BETS) {
+    const config = CASINO_CONFIG.STARTUP_PHASE;
+    let crashMultiplier;
+    
+    if (roundsWithBetsCounter <= config.HARD_DRAIN_ROUNDS) {
+      // Жесткий слив (раунды 1-3 со ставками)
+      const [min, max] = config.MULTIPLIER_RANGE.HARD;
+      crashMultiplier = min + Math.random() * (max - min);
+      console.log(`   🚨 СТАРТ ${roundsWithBetsCounter}/${config.ROUNDS_WITH_BETS}: Жесткий слив [${min}-${max}x] → ${crashMultiplier.toFixed(2)}x`);
+    } else {
+      // Мягкий слив (раунды 4-7 со ставками)
+      const [min, max] = config.MULTIPLIER_RANGE.SOFT;
+      crashMultiplier = min + Math.random() * (max - min);
+      console.log(`   ⚠️ СТАРТ ${roundsWithBetsCounter}/${config.ROUNDS_WITH_BETS}: Мягкий слив [${min}-${max}x] → ${crashMultiplier.toFixed(2)}x`);
+    }
+    
+    if (roundsWithBetsCounter >= config.ROUNDS_WITH_BETS) {
+      startupRoundsComplete = true;
+      console.log(`   ✅ Стартовая фаза завершена!`);
+    }
+    
+    console.log(`🎰 ════════════════════════════════════════\n`);
+    return parseFloat(crashMultiplier.toFixed(2));
   }
   
-  return parseFloat(Math.max(1.00, collectCrash).toFixed(2));
+  // ═══════════════════════════════════════════════════════════
+  // РЕЖИМ 3: КРИТИЧЕСКАЯ СИТУАЦИЯ (ставки > 30% банка)
+  // ═══════════════════════════════════════════════════════════
+  if (analysis.isCritical) {
+    const emergencyMultiplier = 1.00 + Math.random() * 0.20; // 1.00-1.20x
+    console.log(`   🚨 КРИТИЧЕСКАЯ СИТУАЦИЯ!`);
+    console.log(`   💰 Ставки: ${analysis.totalBets.toFixed(0)} (${(analysis.totalBets / houseBank * 100).toFixed(1)}% банка)`);
+    console.log(`   ⚡ ЭКСТРЕННЫЙ СЛИВ: ${emergencyMultiplier.toFixed(2)}x`);
+    console.log(`🎰 ════════════════════════════════════════\n`);
+    return parseFloat(emergencyMultiplier.toFixed(2));
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // РЕЖИМ 4: ЗАЩИТА ОТ КИТОВ (большие ставки)
+  // ═══════════════════════════════════════════════════════════
+  if (analysis.hasWhale) {
+    const maxAffordable = (houseBank + analysis.totalBets) / analysis.maxBet;
+    
+    // Если большая ставка угрожает банку
+    if (maxAffordable < 2.5) {
+      const whaleCrash = CASINO_CONFIG.BANK_PROTECTION.WHALE_MAX_MULTIPLIER;
+      console.log(`   🐋 ЗАЩИТА ОТ КИТА!`);
+      console.log(`   💰 Ставка кита: ${analysis.maxBet.toFixed(0)} (${(analysis.maxBet / houseBank * 100).toFixed(1)}% банка)`);
+      console.log(`   ⚡ Максимум можем выплатить: ${maxAffordable.toFixed(2)}x`);
+      console.log(`   🛡️ АНТИ-КИТ СЛИВ: ${whaleCrash.toFixed(2)}x`);
+      console.log(`🎰 ════════════════════════════════════════\n`);
+      return parseFloat(whaleCrash.toFixed(2));
+    }
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // РЕЖИМ 5: НАКАЗАНИЕ ГОРЯЧИХ ИГРОКОВ
+  // ═══════════════════════════════════════════════════════════
+  if (analysis.hasHotPlayers) {
+    const penalty = Math.random();
+    if (penalty < 0.65) { // 65% шанс слива
+      const drainMultiplier = 1.00 + Math.random() * 0.35; // 1.00-1.35x
+      console.log(`   🔥 ГОРЯЧИЕ ИГРОКИ В РАУНДЕ: ${analysis.hotPlayers.join(', ')}`);
+      console.log(`   🎯 PENALTY MODE: ${drainMultiplier.toFixed(2)}x`);
+      console.log(`🎰 ════════════════════════════════════════\n`);
+      return parseFloat(drainMultiplier.toFixed(2));
+    }
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // РЕЖИМ 6: АДАПТИВНАЯ КОРРЕКЦИЯ (серии проигрышей казино)
+  // ═══════════════════════════════════════════════════════════
+  if (consecutiveLosses >= CASINO_CONFIG.ADAPTIVE.LOSS_STREAK_TRIGGER) {
+    const aggressiveMultiplier = 1.00 + Math.random() * 0.50; // 1.00-1.50x
+    console.log(`   ⚠️ АДАПТИВНАЯ КОРРЕКЦИЯ!`);
+    console.log(`   📉 Казино проиграло ${consecutiveLosses} раундов подряд`);
+    console.log(`   🎯 АГРЕССИВНЫЙ РЕЖИМ: ${aggressiveMultiplier.toFixed(2)}x`);
+    console.log(`🎰 ════════════════════════════════════════\n`);
+    return parseFloat(aggressiveMultiplier.toFixed(2));
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // РЕЖИМ 7: НОРМАЛЬНОЕ РАСПРЕДЕЛЕНИЕ (зависит от фазы банка)
+  // ═══════════════════════════════════════════════════════════
+  
+  let distribution;
+  switch (phase) {
+    case 'ACCUMULATION':
+      distribution = CASINO_CONFIG.MULTIPLIER_DISTRIBUTION.ACCUMULATION;
+      break;
+    case 'BALANCED':
+      distribution = CASINO_CONFIG.MULTIPLIER_DISTRIBUTION.BALANCED;
+      break;
+    case 'ACHIEVED':
+      distribution = CASINO_CONFIG.MULTIPLIER_DISTRIBUTION.ACHIEVED;
+      break;
+    default:
+      distribution = CASINO_CONFIG.MULTIPLIER_DISTRIBUTION.ACCUMULATION;
+  }
+  
+  // Генерируем базовый множитель
+  let crashMultiplier = weightedRandomChoice(distribution);
+  
+  // Применяем House Edge
+  crashMultiplier = applyHouseEdge(crashMultiplier);
+  
+  // Финальная проверка: можем ли мы это выплатить?
+  const maxPossiblePayout = analysis.totalBets * crashMultiplier;
+  if (!canAfford(maxPossiblePayout)) {
+    const reserve = houseBank * CASINO_CONFIG.BANK_PROTECTION.RESERVE_PERCENT;
+    const maxSafeMultiplier = (houseBank - reserve + analysis.totalBets) / analysis.totalBets;
+    crashMultiplier = Math.min(crashMultiplier, maxSafeMultiplier * 0.85); // 85% от максимума
+    
+    console.log(`   🛡️ ЗАЩИТА БАНКА: Ограничено до ${crashMultiplier.toFixed(2)}x`);
+  }
+  
+  // Финальные границы
+  crashMultiplier = Math.max(1.00, Math.min(100.00, crashMultiplier));
+  
+  console.log(`   🎲 Распределение: ${phase}`);
+  console.log(`   💎 ФИНАЛЬНЫЙ Crash Point: ${crashMultiplier.toFixed(2)}x`);
+  console.log(`   📊 Потенциальная выплата: ${(analysis.totalBets * crashMultiplier).toFixed(0)}`);
+  console.log(`   💰 Останется в банке: ~${(houseBank + analysis.totalBets - analysis.totalBets * crashMultiplier).toFixed(0)}`);
+  console.log(`🎰 ════════════════════════════════════════\n`);
+  
+  return parseFloat(crashMultiplier.toFixed(2));
 }
 
 /**
  * Статус банка для API
  */
 function getBankStatus() {
-  if (houseBank >= TARGET_BANK) return 'GOAL_REACHED';
-  if (houseBank > 500000) return 'high';
-  if (houseBank > 100000) return 'medium';
-  if (houseBank > 10000) return 'growing';
-  return 'low';
+  const progress = houseBank / CASINO_CONFIG.TARGET_BANK;
+  if (progress >= 1.0) return 'ACHIEVED';
+  if (progress >= 0.5) return 'BALANCED';
+  return 'ACCUMULATION';
 }
 
 // Проверка безопасности банка - НИКОГДА НЕ УХОДИТ В МИНУС!
@@ -1035,7 +1002,7 @@ function startPlay() {
   const totalBets = totalStaked(currentRound);
   
   // УМНЫЙ РАСЧЕТ: передаем ВСЕ ставки для анализа
-  currentRound.crashAt = calculateSmartCrashPoint(currentRound.bets);
+  currentRound.crashAt = calculateDynamicCrashPoint(currentRound.bets);
   
   currentRound.state = 'playing';
   state = 'playing';
@@ -1122,35 +1089,52 @@ function endRound() {
   writeDB(data);
 
   // Расчет реальной прибыли казино за раунд
-  // Прибыль = сумма ставок - сумма выплат
   const profit = totalBets - totalPayouts;
-  const profitPercent = totalBets > 0 ? ((profit / totalBets) * 100).toFixed(1) : 0;
   
-  // Проверка большого выигрыша для постепенной отдачи
-  // Если выиграли больше 50% от банка - начинаем постепенную отдачу 60%
-  if (profit > houseBank * 0.5 && !isGiveawayMode && !isDrainMode) {
-    bigWinAmount = profit;
-    isGiveawayMode = true;
-    giveawayRoundsLeft = 5; // Отдаём за 5 раундов
-    console.log(`   🎉 БОЛЬШОЙ ВЫИГРЫШ! Начинаем постепенную отдачу 60% (${(bigWinAmount * 0.6).toFixed(0)}) за 5 раундов`);
+  // Обновляем статистику
+  stats.totalBets += totalBets;
+  stats.totalPayouts += totalPayouts;
+  stats.totalRounds++;
+  stats.totalProfit += profit;
+  stats.currentRTP = stats.totalBets > 0 ? (stats.totalPayouts / stats.totalBets * 100) : 0;
+  
+  // Обновляем серии
+  if (profit > 0) {
+    consecutiveWins++;
+    consecutiveLosses = 0;
+  } else {
+    consecutiveLosses++;
+    consecutiveWins = 0;
   }
   
-  console.log(`\n💥 ========== РАУНД ЗАВЕРШЕН ==========`);
-  console.log(`   🎲 Раунд: ${currentRound.id}`);
+  // Обновляем трекинг игроков
+  for (const userId in currentRound.bets) {
+    const bet = currentRound.bets[userId];
+    if (bet.cashedOut && bet.payout > 0) {
+      updatePlayerTracking(userId, bet.amount, bet.payout, false);
+    } else if (bet.amount > 0) {
+      updatePlayerTracking(userId, bet.amount, 0, true);
+    }
+  }
+  
+  const profitPercent = totalBets > 0 ? ((profit / totalBets) * 100).toFixed(1) : 0;
+  
+  console.log(`\n💥 ═══════════════════════════════════════`);
+  console.log(`   РАУНД ЗАВЕРШЁН #${roundCounter}`);
   console.log(`   💥 Crash: ${currentRound.crashAt}x`);
-  console.log(`   💰 Банк: ${currentRound.initialBank} -> ${houseBank} (${profit >= 0 ? '+' : ''}${profit.toFixed(0)})`);
-  console.log(`   📊 Ставок: ${totalBets} | Выплат: ${totalPayouts.toFixed(0)}`);
+  console.log(`   💰 Банк: ${currentRound.initialBank.toFixed(0)} -> ${houseBank.toFixed(0)} (${profit >= 0 ? '+' : ''}${profit.toFixed(0)})`);
+  console.log(`   📊 Ставок: ${totalBets.toFixed(0)} | Выплат: ${totalPayouts.toFixed(0)}`);
   console.log(`   👥 Выиграли: ${cashedOutCount} | Проиграли: ${lostCount}`);
   console.log(`   📈 Прибыль казино: ${profit >= 0 ? '+' : ''}${profit.toFixed(0)} (${profitPercent}%)`);
+  console.log(`   📊 RTP (общий): ${stats.currentRTP.toFixed(2)}%`);
   
-  // ПРОВЕРКА: банк не должен был уйти в минус
-  if (houseBank < 0) {
-    console.log(`   🚨 КРИТИЧЕСКАЯ ОШИБКА: Банк ушел в минус! Восстанавливаем...`);
-    houseBank = 100; // Минимальный аварийный банк
+  if (houseBank < CASINO_CONFIG.BANK_PROTECTION.MIN_BANK) {
+    console.log(`   🚨 ВОССТАНОВЛЕНИЕ: Банк поднят до минимума`);
+    houseBank = CASINO_CONFIG.BANK_PROTECTION.MIN_BANK;
     saveBank();
   }
   
-  console.log(`💥 ======================================\n`);
+  console.log(`💥 ═══════════════════════════════════════\n`);
 
   io.emit('roundEnd', { id: currentRound.id, crashAt: currentRound.crashAt });
 
@@ -2155,16 +2139,25 @@ if (TELEGRAM_TOKEN) {
 // ============================================
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🎰 ========== CRASH CASINO ==========`);
+  console.log(`\n🎰 ═══════════════════════════════════════════════════════`);
+  console.log(`   MYUPSTAKE CRASH CASINO v2.0 - ДИНАМИЧЕСКИЙ РАСЧЕТ`);
+  console.log(`🎰 ═══════════════════════════════════════════════════════`);
   console.log(`🌐 Сервер: http://0.0.0.0:${PORT}`);
-  console.log(`💰 Банк: ${houseBank} / ${TARGET_BANK} (${(houseBank/TARGET_BANK*100).toFixed(2)}%)`);
-  console.log(`📊 Статус: ${getBankStatus()}`);
-  console.log(`\n📋 АЛГОРИТМ:`);
-  console.log(`   🎯 Цель: накопить ${TARGET_BANK.toLocaleString()}`);
-  console.log(`   🍀 Шанс удачи: 20% (7-8% банка) + 10% (10-11% банка)`);
-  console.log(`   💼 Накопление: ~82% раундов`);
-  console.log(`   🐋 Защита: большие ставки = мгновенный слив`);
-  console.log(`   ⚡ Старт с 0: первые 4 раунда - жёсткий слив`);
+  console.log(`💰 Банк: ${houseBank.toFixed(0)} / ${CASINO_CONFIG.TARGET_BANK.toLocaleString()}`);
+  console.log(`📊 Фаза: ${getCurrentPhase()}`);
+  console.log(`\n⚡ РЕЖИМ РАБОТЫ 24/7:`);
+  console.log(`   🎭 НЕТ СТАВОК → Показательные иксы:`);
+  console.log(`      • 35% шанс: 1.50x-3.40x (низкие)`);
+  console.log(`      • 35% шанс: 3.40x-10.0x (средние)`);
+  console.log(`      • 30% шанс: 10.0x-50.0x (высокие)`);
+  console.log(`   🚨 ПЕРВЫЕ 7 РАУНДОВ СО СТАВКАМИ → Слив 1.0-1.2x`);
+  console.log(`   💰 ДАЛЕЕ → Адаптивная логика (зависит от банка)`);
+  console.log(`   🔥 РАСЧЕТ → В последний момент после всех ставок`);
+  console.log(`\n📋 ЗАЩИТА:`);
+  console.log(`   🐋 Анти-кит: ставка >15% банка = слив 1.10x`);
+  console.log(`   🚨 Критично: ставки >30% банка = слив 1.00-1.20x`);
+  console.log(`   🔥 Горячие игроки: 65% шанс слива`);
+  console.log(`   🛡️ Минимальный банк: ${CASINO_CONFIG.BANK_PROTECTION.MIN_BANK}`);
   if (TELEGRAM_TOKEN) {
     console.log(`\n🤖 Telegram бот: Активен`);
   } else {
