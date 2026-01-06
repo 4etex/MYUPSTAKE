@@ -264,10 +264,10 @@ const io = new Server(server, {
   transports: ['websocket', 'polling']
 });
 
-// Ensure public folder exists
-const publicPath = path.join(__dirname, 'public');
+// Serve static files from build folder (React production build)
+const publicPath = path.join(__dirname, 'build');
 if (!fs.existsSync(publicPath)) {
-  fs.mkdirSync(publicPath, { recursive: true });
+  console.warn('⚠️ Build folder not found! Run "npm run build" first.');
 }
 app.use(express.static(publicPath));
 
