@@ -1764,10 +1764,17 @@ app.get('/api/withdraw/status/:oddserId', rateLimit(), (req, res) => {
 
 // ============================================
 // SPA FALLBACK - Все не-API маршруты отдают index.html
+// ВАЖНО: Этот маршрут должен быть ПОСЛЕДНИМ, после всех API маршрутов
 // ============================================
 app.get('/*', (req, res, next) => {
   // Пропускаем API маршруты
   if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io/')) {
+    return next();
+  }
+  
+  // Пропускаем статические файлы (CSS, JS, изображения и т.д.)
+  // Express.static должен обработать их первым, но на всякий случай проверяем
+  if (req.path.match(/\.(js|css|map|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
     return next();
   }
   

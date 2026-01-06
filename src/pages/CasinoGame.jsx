@@ -138,6 +138,16 @@ const CasinoGame = () => {
       addLog('⚠️ Отключено от сервера');
     });
 
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      addLog('❌ Ошибка подключения к серверу');
+    });
+
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
+      addLog('❌ Ошибка соединения');
+    });
+
     // Получение текущего состояния при подключении
     socket.on('state', (data) => {
       console.log('Received state:', data);

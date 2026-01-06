@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './DepositModal.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+// Используем тот же способ определения URL, что и в CasinoGame
+const getBackendUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return window.location.origin;
+  }
+  return process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+};
+
+const BACKEND_URL = getBackendUrl();
 
 const DepositModal = ({ isOpen, onClose, userId, onBalanceUpdate }) => {
   const [packages, setPackages] = useState([]);
