@@ -1765,7 +1765,7 @@ app.get('/api/withdraw/status/:oddserId', rateLimit(), (req, res) => {
 // ============================================
 // SPA FALLBACK - Все не-API маршруты отдают index.html
 // ============================================
-app.get('*', (req, res, next) => {
+app.get('/*', (req, res, next) => {
   // Пропускаем API маршруты
   if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io/')) {
     return next();
