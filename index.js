@@ -265,7 +265,7 @@ const io = new Server(server, {
 });
 
 // Serve static files from build folder (React production build)
-const publicPath = path.join(__dirname, 'build');
+const publicPath = path.join(__dirname, 'build');а
 if (!fs.existsSync(publicPath)) {
   console.warn('⚠️ Build folder not found! Run "npm run build" first.');
   console.warn(`   Looking for: ${publicPath}`);
@@ -364,44 +364,202 @@ function saveBank() {
 
 loadBank();
 
-// ============================================
-// АЛГОРИТМ КАЗИНО: КОПИТ И ОТДАЁТ ПРОЦЕНТ ОТ БАНКА
-// ============================================
-// Цель: накопить 1,000,000
-// Режим накопления: сливает ставки (1.00x - 1.09x)
-// Режим удачи: отдаёт 7-11% от банка (шанс 12-17%)
-// Большие ставки: мгновенный слив если не может выплатить
-// ============================================
+// ═══════════════════════════════════════════════════════════════
+// КОНФИГУРАЦИЯ КАЗИНО v2.0
+// ═══════════════════════════════════════════════════════════════
+const CASINO_CONFIG = {
+  TARGET_BANK: 1000000,
+  HOUSE_EDGE: 0.12, // 12% маржа
+  
+  // ПОКАЗАТЕЛЬНЫЕ РАУНДЫ (когда нет ставок)
+  SHOWCASE: {
+    ENABLED: true,
+    // Распределение показательных множителей
+    LOW: { chance: 0.35, range: [1.50, 3.40] },      // 35% - низкие
+    MEDIUM: { chance: 0.35, range: [3.40, 10.0] },   // 35% - средние
+    HIGH: { chance: 0.30, range: [10.0, 50.0] }      // 30% - высокие
+  },
+  
+  // СТАРТОВАЯ ФАЗА (первые 7 раундов со ставками)
+  STARTUP_PHASE: {
+    ENABLED: true,
+    ROUNDS_WITH_BETS: 7, // Первые 7 раундов СО СТАВКАМИ
+    HARD_DRAIN_ROUNDS: 3,
+    MULTIPLIER_RANGE: {
+      HARD: [1.00, 1.05],  // Раунды 1-3 со ставками
+      SOFT: [1.05, 1.20]   // Раунды 4-7 со ставками
+    }
+  },
+  
+  // ЗАЩИТА БАНКА
+  BANK_PROTECTION: {
+    MIN_BANK: 50,
+    WHALE_BET_THRESHOLD: 0.15,      // 15% от банка = кит
+    WHALE_MAX_MULTIPLIER: 1.10,     // Максимум для кита
+    RESERVE_PERCENT: 0.05,          // 5% резерв
+    CRITICAL_THRESHOLD: 0.3         // Если ставки > 30% банка = критично
+  },
+  
+  // АДАПТИВНАЯ СИСТЕМА
+  ADAPTIVE: {
+    LOSS_STREAK_TRIGGER: 3,
+    PLAYER_WIN_STREAK_TRIGGER: 2,
+    HOT_PLAYER_PROFIT_THRESHOLD: 5000,
+  },
+  
+  // РАСПРЕДЕЛЕНИЕ МНОЖИТЕЛЕЙ (когда есть ставки)
+  MULTIPLIER_DISTRIBUTION: {
+    // Фаза накопления (банк < 50% цели)
+    ACCUMULATION: {
+      VERY_LOW: { weight: 40, range: [1.00, 1.30] },  // 40% - очень низкие
+      LOW: { weight: 35, range: [1.30, 2.00] },       // 35%
+      MEDIUM: { weight: 15, range: [2.00, 4.00] },    // 15%
+      HIGH: { weight: 7, range: [4.00, 8.00] },       // 7%
+      VERY_HIGH: { weight: 3, range: [8.00, 20.00] }  // 3%
+    },
+    // Фаза баланса (банк 50-100% цели)
+    BALANCED: {
+      VERY_LOW: { weight: 30, range: [1.00, 1.50] },
+      LOW: { weight: 35, range: [1.50, 2.50] },
+      MEDIUM: { weight: 20, range: [2.50, 5.00] },
+      HIGH: { weight: 10, range: [5.00, 12.00] },
+      VERY_HIGH: { weight: 5, range: [12.00, 30.00] }
+    },
+    // Фаза достижения цели (банк > 100% цели)
+    ACHIEVED: {
+      VERY_LOW: { weight: 20, range: [1.00, 2.00] },
+      LOW: { weight: 30, range: [2.00, 3.50] },
+      MEDIUM: { weight: 30, range: [3.50, 8.00] },
+      HIGH: { weight: 15, range: [8.00, 20.00] },
+      VERY_HIGH: { weight: 5, range: [20.00, 100.00] }
+    }
+  }
+};
 
-// TARGET_BANK теперь в CASINO_CONFIG
+// ═══════════════════════════════════════════════════════════════
+// ГЛОБАЛЬНОЕ СОСТОЯНИЕ
+// ═══════════════════════════════════════════════════════════════
 let roundCounter = 0;
-let startupRounds = 0; // Счётчик раундов при старте с нуля
-let lastGiveawayRound = 0; // Последний раунд когда отдавали деньги
+let roundsWithBetsCounter = 0; // Счетчик раундов СО СТАВКАМИ
+let startupRoundsComplete = false;
+let consecutiveLosses = 0;
+let consecutiveWins = 0;
+const stats = {
+  totalBets: 0,
+  totalPayouts: 0,
+  totalRounds: 0,
+  totalProfit: 0,
+  currentRTP: 0
+};
+const playerTracking = new Map();
 
-// Система постепенной отдачи 60% большого выигрыша
-let bigWinAmount = 0; // Сумма большого выигрыша для отдачи
-let giveawayRoundsLeft = 0; // Сколько раундов осталось для отдачи
-let isGiveawayMode = false; // Режим постепенной отдачи
-let isDrainMode = false; // Режим слива после отдачи (если игроки лудятся)
-let drainRoundsLeft = 0; // Сколько раундов сливать
+// ═══════════════════════════════════════════════════════════════
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ═══════════════════════════════════════════════════════════════
+function getCurrentPhase() {
+  const progress = houseBank / CASINO_CONFIG.TARGET_BANK;
+  if (progress < 0.5) return 'ACCUMULATION';
+  if (progress < 1.0) return 'BALANCED';
+  return 'ACHIEVED';
+}
+
+function exponentialRandom(lambda = 1.0) {
+  const u = Math.random();
+  return -Math.log(1 - u) / lambda;
+}
+
+function weightedRandomChoice(distribution) {
+  const totalWeight = Object.values(distribution).reduce((sum, item) => sum + item.weight, 0);
+  let random = Math.random() * totalWeight;
+  
+  for (const [key, item] of Object.entries(distribution)) {
+    random -= item.weight;
+    if (random <= 0) {
+      const [min, max] = item.range;
+      return min + Math.random() * (max - min);
+    }
+  }
+  return 1.50;
+}
+
+function applyHouseEdge(multiplier) {
+  return multiplier * (1 - CASINO_CONFIG.HOUSE_EDGE);
+}
+
+function canAfford(amount) {
+  const reserve = houseBank * CASINO_CONFIG.BANK_PROTECTION.RESERVE_PERCENT;
+  return (houseBank - reserve) >= amount;
+}
+
+function updatePlayerTracking(userId, betAmount, payout, crashed) {
+  if (!playerTracking.has(userId)) {
+    playerTracking.set(userId, {
+      profit: 0,
+      winStreak: 0,
+      lossStreak: 0,
+      lastRounds: []
+    });
+  }
+  
+  const player = playerTracking.get(userId);
+  const profit = payout - betAmount;
+  player.profit += profit;
+  
+  if (payout > betAmount) {
+    player.winStreak++;
+    player.lossStreak = 0;
+  } else {
+    player.lossStreak++;
+    player.winStreak = 0;
+  }
+  
+  player.lastRounds.push({ bet: betAmount, payout, crashed, profit });
+  if (player.lastRounds.length > 10) {
+    player.lastRounds.shift();
+  }
+}
+
+function isHotPlayer(userId) {
+  const player = playerTracking.get(userId);
+  if (!player) return false;
+  return player.profit > CASINO_CONFIG.ADAPTIVE.HOT_PLAYER_PROFIT_THRESHOLD ||
+         player.winStreak >= CASINO_CONFIG.ADAPTIVE.PLAYER_WIN_STREAK_TRIGGER;
+}
 
 /**
  * АНАЛИЗ СТАВОК В РАУНДЕ
  */
 function analyzeBets(bets) {
-  const betList = Object.entries(bets).map(([oddserId, bet]) => ({
-    oddserId,
+  const betList = Object.entries(bets).map(([userId, bet]) => ({
+    userId,
     amount: bet.amount || 0
   })).filter(b => b.amount > 0);
   
   const totalBets = betList.reduce((sum, b) => sum + b.amount, 0);
   const betCount = betList.length;
   const maxBet = betList.length > 0 ? Math.max(...betList.map(b => b.amount)) : 0;
+  const avgBet = betCount > 0 ? totalBets / betCount : 0;
+  
+  const whaleThreshold = houseBank * CASINO_CONFIG.BANK_PROTECTION.WHALE_BET_THRESHOLD;
+  const hasWhale = maxBet > whaleThreshold;
+  
+  const criticalThreshold = houseBank * CASINO_CONFIG.BANK_PROTECTION.CRITICAL_THRESHOLD;
+  const isCritical = totalBets > criticalThreshold;
+  
+  const hotPlayers = betList.filter(b => isHotPlayer(b.userId));
+  const hasHotPlayers = hotPlayers.length > 0;
   
   return {
     totalBets,
     betCount,
     maxBet,
+    avgBet,
+    hasWhale,
+    whaleThreshold,
+    isCritical,
+    criticalThreshold,
+    hasHotPlayers,
+    hotPlayers: hotPlayers.map(p => p.userId),
     betList
   };
 }
