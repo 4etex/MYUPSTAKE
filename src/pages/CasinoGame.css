@@ -13,13 +13,16 @@
   min-height: 100vh;
   background: var(--bg-black);
   color: var(--text-white);
-  padding: 24px;
-  max-width: 500px;
+  padding: 16px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   animation: fadeInApp 0.8s ease-out 2.2s both;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 @keyframes fadeInApp {
@@ -38,10 +41,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 16px;
   background: var(--bg-card);
   border-radius: 16px;
   border: 1px solid var(--border-gray);
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .logo {
@@ -72,7 +79,10 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  flex-shrink: 0;
 }
 
 /* ONLINE INDICATOR */
@@ -122,27 +132,37 @@
 .balance-container {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0;
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .balance {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: 0;
   background: var(--bg-dark);
   border: 1px solid var(--border-gray);
   border-left: none;
   border-right: none;
+  min-width: 0;
+  flex: 1;
+  box-sizing: border-box;
 }
 
 .balance-amount {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--text-white);
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .balance-currency {
@@ -152,6 +172,8 @@
 .deposit-btn {
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  flex-shrink: 0;
   border-radius: 0 12px 12px 0;
   border: 1px solid #00ff88;
   background: rgba(0, 255, 136, 0.15);
@@ -164,6 +186,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  box-sizing: border-box;
 }
 
 .deposit-btn:hover {
@@ -179,6 +202,8 @@
 .withdraw-btn-header {
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  flex-shrink: 0;
   border-radius: 12px 0 0 12px;
   border: 1px solid #ff9500;
   border-right: none;
@@ -192,6 +217,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  box-sizing: border-box;
 }
 
 .withdraw-btn-header:hover {
@@ -215,6 +241,8 @@
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .crash-history::-webkit-scrollbar {
@@ -265,15 +293,17 @@
 .game-stage {
   background: var(--bg-card);
   border-radius: 20px;
-  padding: 48px 32px;
+  padding: 32px 20px;
   border: 1px solid var(--border-gray);
-  min-height: 480px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 24px;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .multiplier {
@@ -535,11 +565,13 @@
 .controls {
   background: var(--bg-card);
   border-radius: 20px;
-  padding: 32px;
+  padding: 24px;
   border: 1px solid var(--border-gray);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-wrapper {
@@ -581,13 +613,13 @@
 /* MAIN ACTION BUTTON - ONE BIG BUTTON */
 .main-action-btn {
   width: 100%;
-  padding: 20px 32px;
+  padding: 18px 24px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 1px;
   text-transform: uppercase;
   transition: all 0.3s ease;
@@ -598,6 +630,8 @@
   background: transparent;
   color: rgba(255, 255, 255, 0.6);
   user-select: none;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .main-action-btn:active:not(:disabled) {
@@ -883,16 +917,29 @@
 @media (max-width: 540px) {
   .casino-app {
     padding: 12px;
-    gap: 16px;
+    gap: 12px;
+    max-width: 100vw;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .casino-header {
-    padding: 14px 16px;
-    gap: 10px;
+    padding: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   
   .header-right {
-    gap: 10px;
+    gap: 6px;
+    width: 100%;
+    justify-content: flex-end;
+    order: 3;
+  }
+  
+  .logo {
+    order: 1;
+    flex: 1;
+    min-width: 0;
   }
   
   .logo-text {
@@ -904,18 +951,36 @@
     padding: 6px 10px;
     min-width: 44px;
     height: 32px;
+    flex-shrink: 0;
   }
   
   .online-text {
     font-size: 12px;
   }
   
+  .balance-container {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  
   .balance {
-    padding: 6px 12px;
+    padding: 6px 10px;
+    flex: 1;
+    min-width: 0;
   }
   
   .balance-amount {
-    font-size: 15px;
+    font-size: 13px;
+  }
+  
+  .deposit-btn,
+  .withdraw-btn-header {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 18px;
   }
   
   .crash-history {
@@ -948,27 +1013,35 @@
   }
   
   .main-action-btn {
-    padding: 18px 24px;
-    font-size: 15px;
+    padding: 16px 20px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .btn-amount {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   .quick-bets {
     gap: 6px;
+    flex-wrap: wrap;
   }
   
   .quick-bet-btn {
-    padding: 8px 14px;
+    padding: 8px 12px;
     font-size: 11px;
+    flex: 1;
+    min-width: calc(50% - 3px);
+    box-sizing: border-box;
   }
   
   .auto-cashout {
     padding: 12px;
     flex-wrap: wrap;
     gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .quick-multipliers {
@@ -976,5 +1049,23 @@
     justify-content: center;
     margin-left: 0;
     margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .controls {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 16px;
+  }
+  
+  .game-stage {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 24px 16px;
+  }
+  
+  .crash-history {
+    width: 100%;
+    box-sizing: border-box;
   }
 }
