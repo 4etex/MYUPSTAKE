@@ -265,7 +265,7 @@ const io = new Server(server, {
 });
 
 // Serve static files from build folder (React production build)
-const publicPath = path.join(__dirname, 'build');а
+const publicPath = path.join(__dirname, 'build');
 if (!fs.existsSync(publicPath)) {
   console.warn('⚠️ Build folder not found! Run "npm run build" first.');
   console.warn(`   Looking for: ${publicPath}`);
@@ -362,10 +362,8 @@ function saveBank() {
   writeDB(data);
 }
 
-loadBank();
-
 // ═══════════════════════════════════════════════════════════════
-// КОНФИГУРАЦИЯ КАЗИНО v2.0
+// КОНФИГУРАЦИЯ КАЗИНО v2.0 (ДОЛЖНА БЫТЬ ПЕРЕД loadBank)
 // ═══════════════════════════════════════════════════════════════
 const CASINO_CONFIG = {
   TARGET_BANK: 1000000,
