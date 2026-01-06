@@ -378,6 +378,13 @@ let roundCounter = 0;
 let startupRounds = 0; // Счётчик раундов при старте с нуля
 let lastGiveawayRound = 0; // Последний раунд когда отдавали деньги
 
+// Система постепенной отдачи 60% большого выигрыша
+let bigWinAmount = 0; // Сумма большого выигрыша для отдачи
+let giveawayRoundsLeft = 0; // Сколько раундов осталось для отдачи
+let isGiveawayMode = false; // Режим постепенной отдачи
+let isDrainMode = false; // Режим слива после отдачи (если игроки лудятся)
+let drainRoundsLeft = 0; // Сколько раундов сливать
+
 /**
  * АНАЛИЗ СТАВОК В РАУНДЕ
  */
@@ -481,6 +488,49 @@ function calculateSmartCrashPoint(bets) {
   }
   
   // ============================================
+  // РЕЖИМ 2.5: ПОСТЕПЕННАЯ ОТДАЧА 60% БОЛЬШОГО ВЫИГРЫША
+  // ============================================
+  if (isGiveawayMode && giveawayRoundsLeft > 0) {
+    // Отдаём часть накопленного выигрыша
+    const giveawayPerRound = bigWinAmount * 0.6 / 5; // Отдаём за 5 раундов
+    const giveawayAmount = Math.min(giveawayPerRound, bigWinAmount * 0.6);
+    
+    // Рассчитываем crash который отдаст эту сумму
+    let giveawayCrash = (giveawayAmount + totalBets) / totalBets;
+    giveawayCrash = Math.min(giveawayCrash, maxAffordable * 0.95);
+    giveawayCrash = Math.max(1.5, giveawayCrash);
+    
+    giveawayRoundsLeft--;
+    bigWinAmount -= giveawayAmount;
+    
+    if (giveawayRoundsLeft === 0) {
+      isGiveawayMode = false;
+      // Если игроки лудятся (много ставок) - включаем режим слива
+      if (totalBets > houseBank * 0.1) {
+        isDrainMode = true;
+        drainRoundsLeft = 3; // Сливаем 3 раунда по 1x
+        console.log(`   🎰 Игроки лудятся! Включаем режим слива на 3 раунда`);
+      }
+    }
+    
+    console.log(`   💰 ПОСТЕПЕННАЯ ОТДАЧА: ${giveawayAmount.toFixed(0)} (осталось ${giveawayRoundsLeft} раундов)`);
+    console.log(`   🎁 Giveaway crash: ${giveawayCrash.toFixed(2)}x`);
+    return parseFloat(giveawayCrash.toFixed(2));
+  }
+  
+  // ============================================
+  // РЕЖИМ 2.6: СЛИВ ПОСЛЕ ОТДАЧИ (если игроки лудятся)
+  // ============================================
+  if (isDrainMode && drainRoundsLeft > 0) {
+    drainRoundsLeft--;
+    if (drainRoundsLeft === 0) {
+      isDrainMode = false;
+    }
+    console.log(`   🚨 РЕЖИМ СЛИВА: ${drainRoundsLeft} раундов осталось`);
+    return 1.00; // Жёсткий слив 1.00x
+  }
+  
+  // ============================================
   // РЕЖИМ 3: РАНДОМНАЯ УДАЧА (отдаём процент банка)
   // ============================================
   const luckRoll = Math.random() * 100; // 0-100
@@ -489,8 +539,8 @@ function calculateSmartCrashPoint(bets) {
   // Увеличиваем шанс удачи если давно не отдавали (макс +5%)
   const bonusChance = Math.min(5, roundsSinceGiveaway * 0.5);
   
-  // Шанс 12% (+бонус): отдать 7-8% от банка
-  if (luckRoll < 12 + bonusChance) {
+  // Шанс 20% (+бонус): отдать 7-8% от банка (увеличено с 12%)
+  if (luckRoll < 20 + bonusChance) {
     const giveawayPercent = 7 + Math.random(); // 7-8%
     const giveawayAmount = houseBank * (giveawayPercent / 100);
     
@@ -513,8 +563,8 @@ function calculateSmartCrashPoint(bets) {
     return parseFloat(luckyCrash.toFixed(2));
   }
   
-  // Шанс 5-7% (+бонус): отдать 10-11% от банка (БОЛЬШАЯ УДАЧА)
-  if (luckRoll < 12 + 6 + bonusChance) { // 12 + 6 = 18% суммарно (но 6% это большая удача)
+  // Шанс 10% (+бонус): отдать 10-11% от банка (БОЛЬШАЯ УДАЧА) (увеличено с 6%)
+  if (luckRoll < 20 + 10 + bonusChance) { // 20 + 10 = 30% суммарно (но 10% это большая удача)
     const bigGiveawayPercent = 10 + Math.random(); // 10-11%
     const bigGiveawayAmount = houseBank * (bigGiveawayPercent / 100);
     
@@ -1072,6 +1122,15 @@ function endRound() {
   // Прибыль = сумма ставок - сумма выплат
   const profit = totalBets - totalPayouts;
   const profitPercent = totalBets > 0 ? ((profit / totalBets) * 100).toFixed(1) : 0;
+  
+  // Проверка большого выигрыша для постепенной отдачи
+  // Если выиграли больше 50% от банка - начинаем постепенную отдачу 60%
+  if (profit > houseBank * 0.5 && !isGiveawayMode && !isDrainMode) {
+    bigWinAmount = profit;
+    isGiveawayMode = true;
+    giveawayRoundsLeft = 5; // Отдаём за 5 раундов
+    console.log(`   🎉 БОЛЬШОЙ ВЫИГРЫШ! Начинаем постепенную отдачу 60% (${(bigWinAmount * 0.6).toFixed(0)}) за 5 раундов`);
+  }
   
   console.log(`\n💥 ========== РАУНД ЗАВЕРШЕН ==========`);
   console.log(`   🎲 Раунд: ${currentRound.id}`);
@@ -2099,7 +2158,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`📊 Статус: ${getBankStatus()}`);
   console.log(`\n📋 АЛГОРИТМ:`);
   console.log(`   🎯 Цель: накопить ${TARGET_BANK.toLocaleString()}`);
-  console.log(`   🍀 Шанс удачи: 12% (7-8% банка) + 6% (10-11% банка)`);
+  console.log(`   🍀 Шанс удачи: 20% (7-8% банка) + 10% (10-11% банка)`);
   console.log(`   💼 Накопление: ~82% раундов`);
   console.log(`   🐋 Защита: большие ставки = мгновенный слив`);
   console.log(`   ⚡ Старт с 0: первые 4 раунда - жёсткий слив`);

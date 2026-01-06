@@ -102,19 +102,21 @@
 /* ONLINE INDICATOR TOP RIGHT */
 .online-indicator-top {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  background: var(--bg-dark);
-  border: 1px solid var(--border-gray);
-  z-index: 100;
-  min-width: 45px;
-  height: 32px;
+  background: rgba(10, 10, 10, 0.95);
+  border: 2px solid #00ff88;
+  z-index: 10000;
+  min-width: 50px;
+  height: 36px;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 .online-dot {
@@ -977,28 +979,31 @@
   }
   
   .balance-container {
-    order: 2;
+    order: 1;
     width: 100%;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: 0;
+    margin-bottom: 8px;
   }
   
   .balance {
-    padding: 6px 10px;
+    padding: 8px 12px;
     flex: 1;
     min-width: 0;
   }
   
   .balance-amount {
-    font-size: 13px;
+    font-size: 14px;
   }
   
   .deposit-btn,
   .withdraw-btn-header {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    font-size: 20px;
+    z-index: 1000;
+    position: relative;
   }
   
   .crash-history {
