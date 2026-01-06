@@ -286,12 +286,11 @@ if (!fs.existsSync(publicPath)) {
   }
 }
 
-// Настройка статических файлов с явными опциями
+// Настройка статических файлов
 app.use(express.static(publicPath, {
   maxAge: '1d', // Кэширование на 1 день
   etag: true,
-  lastModified: true,
-  index: false // Не используем index автоматически, обрабатываем вручную
+  lastModified: true
 }));
 
 // Простая работа с JSON файлом
@@ -1605,7 +1604,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Корневой маршрут
+// Корневой маршрут и SPA fallback
 app.get('/', (req, res) => {
   const indexFile = path.join(publicPath, 'index.html');
   if (fs.existsSync(indexFile)) {
@@ -1777,43 +1776,30 @@ app.get('/api/withdraw/status/:oddserId', rateLimit(), (req, res) => {
 
 // ============================================
 // SPA FALLBACK - Все не-API маршруты отдают index.html
-// ВАЖНО: Этот middleware должен быть ПОСЛЕДНИМ, после всех API маршрутов
-// Используем middleware подход для Express 5
+// ВАЖНО: Этот маршрут должен быть ПОСЛЕДНИМ, после всех API маршрутов
+// Используем app.all для обработки всех методов, но только для не-API путей
 // ============================================
 app.use((req, res, next) => {
-  // Если ответ уже отправлен, пропускаем
-  if (res.headersSent) {
-    return next();
-  }
-  
-  // Пропускаем API маршруты
+  // Если это API или Socket.io - пропускаем
   if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io/')) {
     return next();
   }
   
-  // Пропускаем статические файлы (CSS, JS, изображения и т.д.)
-  // Express.static должен обработать их первым
+  // Если это статический файл - пропускаем (express.static должен обработать)
   if (req.path.match(/\.(js|css|map|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
     return next();
   }
   
-  // Для всех остальных маршрутов отдаем index.html (SPA)
-  const indexFile = path.join(publicPath, 'index.html');
-  if (fs.existsSync(indexFile)) {
-    return res.sendFile(indexFile);
+  // Если это GET запрос и не корневой путь - отдаем index.html
+  if (req.method === 'GET' && req.path !== '/') {
+    const indexFile = path.join(publicPath, 'index.html');
+    if (fs.existsSync(indexFile)) {
+      return res.sendFile(indexFile);
+    }
   }
   
-  // Fallback если build папки нет
-  return res.status(200).send(`
-    <html>
-      <head><title>MYUPSTAKE Casino</title></head>
-      <body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:50px;">
-        <h1>🎰 MYUPSTAKE Casino</h1>
-        <p>Сервер работает! Но React приложение не собрано.</p>
-        <p>Запустите: <code>npm run build</code></p>
-      </body>
-    </html>
-  `);
+  // Для остальных случаев - пропускаем дальше
+  next();
 });
 
 // ============================================
