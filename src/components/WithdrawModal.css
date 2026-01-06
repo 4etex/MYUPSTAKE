@@ -1,0 +1,297 @@
+/* WITHDRAW MODAL */
+.withdraw-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.withdraw-modal {
+  background: #0a0a0a;
+  border-radius: 20px;
+  border: 1px solid #222;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.withdraw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #222;
+}
+
+.withdraw-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Tabs */
+.withdraw-tabs {
+  display: flex;
+  border-bottom: 1px solid #222;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 14px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+  color: #888;
+}
+
+.tab-btn.active {
+  color: #00ff88;
+  border-bottom-color: #00ff88;
+}
+
+/* Form */
+.withdraw-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.balance-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #111;
+  border-radius: 12px;
+  border: 1px solid #222;
+}
+
+.balance-info span:first-child {
+  color: #888;
+  font-size: 14px;
+}
+
+.balance-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #00ff88;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.form-group input {
+  padding: 14px 16px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #444;
+}
+
+/* Method buttons */
+.method-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.method-buttons .method-btn {
+  flex: 1;
+  padding: 12px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.method-buttons .method-btn:hover {
+  border-color: #444;
+  color: #fff;
+}
+
+.method-buttons .method-btn.active {
+  border-color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+}
+
+/* Info */
+.withdraw-info {
+  padding: 16px;
+  background: rgba(255, 221, 0, 0.1);
+  border: 1px solid rgba(255, 221, 0, 0.2);
+  border-radius: 10px;
+}
+
+.withdraw-info p {
+  margin: 0;
+  padding: 4px 0;
+  font-size: 12px;
+  color: #ffdd00;
+}
+
+/* Submit button */
+.withdraw-btn {
+  padding: 16px;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  border: none;
+  border-radius: 12px;
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.withdraw-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 255, 136, 0.4);
+}
+
+.withdraw-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* History */
+.withdraw-history {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.empty-history {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.history-item {
+  padding: 16px;
+  background: #111;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #222;
+}
+
+.history-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.history-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.pending {
+  background: rgba(255, 221, 0, 0.2);
+  color: #ffdd00;
+}
+
+.status-badge.approved {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+}
+
+.status-badge.rejected {
+  background: rgba(255, 51, 51, 0.2);
+  color: #ff3333;
+}
+
+.history-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .withdraw-modal {
+    max-height: 85vh;
+    border-radius: 20px 20px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+  }
+  
+  .withdraw-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}
+
+

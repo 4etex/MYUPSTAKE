@@ -1,0 +1,980 @@
+/* BLACK & WHITE MINIMALIST CASINO - Современные шрифты */
+
+:root {
+  --bg-black: #000000;
+  --bg-dark: #0a0a0a;
+  --bg-card: #111111;
+  --text-white: #ffffff;
+  --text-gray: #888888;
+  --border-gray: #222222;
+}
+
+.casino-app {
+  min-height: 100vh;
+  background: var(--bg-black);
+  color: var(--text-white);
+  padding: 24px;
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeInApp 0.8s ease-out 2.2s both;
+}
+
+@keyframes fadeInApp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* HEADER */
+.casino-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-gray);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.logo-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--text-white);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ONLINE INDICATOR */
+.online-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-gray);
+  min-width: 50px;
+  height: 36px;
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  background: #00ff88;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00ff88;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+.online-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: #00ff88;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.balance-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.balance {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 0;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-gray);
+  border-left: none;
+  border-right: none;
+}
+
+.balance-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-white);
+  letter-spacing: 0.5px;
+}
+
+.balance-currency {
+  font-size: 14px;
+}
+
+.deposit-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 0 12px 12px 0;
+  border: 1px solid #00ff88;
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.deposit-btn:hover {
+  background: #00ff88;
+  color: #000;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+}
+
+.deposit-btn:active {
+  transform: scale(0.95);
+}
+
+.withdraw-btn-header {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px 0 0 12px;
+  border: 1px solid #ff9500;
+  border-right: none;
+  background: rgba(255, 149, 0, 0.15);
+  color: #ff9500;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.withdraw-btn-header:hover {
+  background: #ff9500;
+  color: #000;
+  box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
+}
+
+.withdraw-btn-header:active {
+  transform: scale(0.95);
+}
+
+/* CRASH HISTORY BAR */
+.crash-history {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-gray);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.crash-history::-webkit-scrollbar {
+  display: none;
+}
+
+.crash-history-item {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  animation: historyPop 0.3s ease-out;
+}
+
+.crash-history-item:first-child {
+  animation: historyPopNew 0.5s ease-out;
+}
+
+@keyframes historyPop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes historyPopNew {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-10px);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* GAME STAGE */
+.game-stage {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 48px 32px;
+  border: 1px solid var(--border-gray);
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  position: relative;
+}
+
+.multiplier {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 72px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-white);
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Multiplier color based on value */
+.multiplier.low {
+  color: #ffffff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.multiplier.medium {
+  color: #ffdd00;
+  text-shadow: 0 0 40px rgba(255, 221, 0, 0.5);
+}
+
+.multiplier.high {
+  color: #ff9500;
+  text-shadow: 0 0 50px rgba(255, 149, 0, 0.6);
+  animation: highPulse 0.5s ease-in-out infinite;
+}
+
+.multiplier.extreme {
+  color: #ff3366;
+  text-shadow: 0 0 60px rgba(255, 51, 102, 0.8), 0 0 100px rgba(255, 51, 102, 0.4);
+  animation: extremePulse 0.3s ease-in-out infinite;
+}
+
+@keyframes highPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes extremePulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.03); filter: brightness(1.2); }
+}
+
+/* CRASH ANIMATION - Проигрыш */
+.multiplier.crashed {
+  color: #ff3333 !important;
+  text-shadow: 0 0 60px rgba(255, 0, 0, 0.8), 0 0 100px rgba(255, 0, 0, 0.5);
+  animation: crashShake 0.6s ease-out, crashPulse 0.3s ease-out 3;
+}
+
+@keyframes crashShake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  10% { transform: translateX(-15px) rotate(-3deg); }
+  20% { transform: translateX(15px) rotate(3deg); }
+  30% { transform: translateX(-12px) rotate(-2deg); }
+  40% { transform: translateX(12px) rotate(2deg); }
+  50% { transform: translateX(-8px) rotate(-1deg); }
+  60% { transform: translateX(8px) rotate(1deg); }
+  70% { transform: translateX(-4px) rotate(0deg); }
+  80% { transform: translateX(4px) rotate(0deg); }
+  90% { transform: translateX(-2px) rotate(0deg); }
+}
+
+@keyframes crashPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+/* Game stage crashed state */
+.game-stage.crashed {
+  animation: stageCrash 0.8s ease-out;
+  border-color: #ff3333 !important;
+  box-shadow: 0 0 50px rgba(255, 0, 0, 0.3), inset 0 0 100px rgba(255, 0, 0, 0.1);
+}
+
+@keyframes stageCrash {
+  0% { background: var(--bg-card); }
+  15% { background: rgba(255, 50, 50, 0.3); }
+  30% { background: var(--bg-card); }
+  45% { background: rgba(255, 50, 50, 0.2); }
+  60% { background: var(--bg-card); }
+  75% { background: rgba(255, 50, 50, 0.1); }
+  100% { background: var(--bg-card); }
+}
+
+/* Image circle crash effect */
+.image-circle.crashed {
+  border-color: #ff3333 !important;
+  box-shadow: 0 0 40px rgba(255, 0, 0, 0.5);
+  animation: circleCrash 0.5s ease-out;
+}
+
+@keyframes circleCrash {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(0.9) rotate(-5deg); }
+  50% { transform: scale(1.05) rotate(5deg); }
+  75% { transform: scale(0.95) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Crash overlay effect */
+.crash-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(255, 0, 0, 0.2) 100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 20px;
+  z-index: 10;
+}
+
+.crash-overlay.active {
+  opacity: 1;
+  animation: overlayFlash 0.8s ease-out;
+}
+
+@keyframes overlayFlash {
+  0%, 100% { opacity: 0; }
+  20% { opacity: 1; }
+  40% { opacity: 0.5; }
+  60% { opacity: 0.8; }
+  80% { opacity: 0.3; }
+}
+
+/* CRASH TEXT */
+.crash-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  color: #ff3333;
+  text-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+  opacity: 0;
+  z-index: 20;
+  letter-spacing: 8px;
+}
+
+.crash-text.active {
+  animation: crashTextAppear 1.5s ease-out forwards;
+}
+
+@keyframes crashTextAppear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+/* WIN ANIMATION */
+.multiplier.won {
+  color: #00ff88 !important;
+  text-shadow: 0 0 60px rgba(0, 255, 136, 0.8);
+  animation: winGlow 0.5s ease-out 2;
+}
+
+@keyframes winGlow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); filter: brightness(1.3); }
+}
+
+.game-stage.won {
+  border-color: #00ff88 !important;
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+}
+
+.countdown {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-gray);
+}
+
+.next-round-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffdd00;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(255, 221, 0, 0.1);
+  border: 1px solid rgba(255, 221, 0, 0.3);
+  animation: badgePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.center-visual {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.image-circle {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: var(--bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border-gray);
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.image-circle:hover {
+  transform: scale(1.05);
+  border-color: var(--text-white);
+  box-shadow: 0 0 60px rgba(255, 255, 255, 0.2);
+}
+
+.image-circle img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* CONTROLS */
+.controls {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid var(--border-gray);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.bet-input {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-gray);
+  background: var(--bg-dark);
+  color: var(--text-white);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.bet-input:focus {
+  border-color: var(--text-white);
+  background: var(--bg-black);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+/* MAIN ACTION BUTTON - ONE BIG BUTTON */
+.main-action-btn {
+  width: 100%;
+  padding: 20px 32px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  user-select: none;
+}
+
+.main-action-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* BET state - white outline */
+.main-action-btn.bet {
+  background: transparent;
+  color: var(--text-white);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.main-action-btn.bet:hover:not(:disabled) {
+  background: var(--text-white);
+  color: var(--bg-black);
+  border-color: var(--text-white);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* CASHOUT state - green glow */
+.main-action-btn.cashout {
+  background: transparent;
+  color: #00ff88;
+  border: 1px solid #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  animation: cashoutGlow 1s ease-in-out infinite;
+}
+
+.main-action-btn.cashout:hover {
+  background: #00ff88;
+  color: var(--bg-black);
+  border-color: #00ff88;
+  text-shadow: none;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+}
+
+@keyframes cashoutGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
+  }
+}
+
+/* QUEUED state - yellow */
+.main-action-btn.queued {
+  background: rgba(255, 221, 0, 0.1);
+  color: #ffdd00;
+  border: 1px solid rgba(255, 221, 0, 0.5);
+}
+
+/* Disabled state */
+.main-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  font-size: 16px;
+}
+
+.btn-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* AUTO CASHOUT */
+.auto-cashout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-dark);
+  border-radius: 12px;
+  border: 1px solid var(--border-gray);
+}
+
+.auto-cashout-toggle {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: var(--border-gray);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  padding: 0;
+}
+
+.auto-cashout-toggle.active {
+  background: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+}
+
+.auto-cashout-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: var(--text-white);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auto-cashout-toggle.active::after {
+  transform: translateX(22px);
+}
+
+.auto-cashout-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.auto-cashout-label.active {
+  color: #00ff88;
+}
+
+.auto-cashout-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-gray);
+  background: var(--bg-black);
+  color: var(--text-white);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: all 0.3s ease;
+  max-width: 100px;
+}
+
+.auto-cashout-input:focus {
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
+}
+
+.auto-cashout-input.active {
+  border-color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.auto-cashout-suffix {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-gray);
+}
+
+/* Quick multiplier buttons for auto cashout */
+.quick-multipliers {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.quick-mult-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-gray);
+  background: transparent;
+  color: var(--text-gray);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-mult-btn:hover {
+  background: var(--text-white);
+  color: var(--bg-black);
+  border-color: var(--text-white);
+}
+
+.quick-mult-btn.active {
+  background: #00ff88;
+  color: var(--bg-black);
+  border-color: #00ff88;
+}
+
+/* QUICK BETS */
+.quick-bets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quick-bet-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-gray);
+  background: var(--bg-dark);
+  color: var(--text-white);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-bet-btn:hover {
+  background: var(--text-white);
+  color: var(--bg-black);
+  border-color: var(--text-white);
+  transform: translateY(-2px);
+}
+
+.quick-bet-btn:active {
+  transform: translateY(0);
+}
+
+/* LOG CONTAINER */
+.log-container {
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-gray);
+  overflow: hidden;
+}
+
+.log-header {
+  padding: 16px 24px;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border-gray);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-white);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.log {
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 16px 24px;
+  font-size: 11px;
+  color: var(--text-gray);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.8;
+}
+
+.log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.log::-webkit-scrollbar-thumb {
+  background: var(--border-gray);
+  border-radius: 3px;
+}
+
+.log::-webkit-scrollbar-thumb:hover {
+  background: var(--text-gray);
+}
+
+.log div {
+  margin-bottom: 6px;
+  transition: color 0.2s ease;
+}
+
+.log div:hover {
+  color: var(--text-white);
+}
+
+/* RESPONSIVE */
+@media (max-width: 540px) {
+  .casino-app {
+    padding: 12px;
+    gap: 16px;
+  }
+  
+  .casino-header {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  
+  .header-right {
+    gap: 10px;
+  }
+  
+  .logo-text {
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+  
+  .online-indicator {
+    padding: 6px 10px;
+    min-width: 44px;
+    height: 32px;
+  }
+  
+  .online-text {
+    font-size: 12px;
+  }
+  
+  .balance {
+    padding: 6px 12px;
+  }
+  
+  .balance-amount {
+    font-size: 15px;
+  }
+  
+  .crash-history {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  
+  .crash-history-item {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .game-stage {
+    min-height: 360px;
+    padding: 28px 20px;
+  }
+  
+  .multiplier {
+    font-size: 48px;
+  }
+  
+  .image-circle {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .controls {
+    padding: 24px 20px;
+    gap: 16px;
+  }
+  
+  .main-action-btn {
+    padding: 18px 24px;
+    font-size: 15px;
+  }
+  
+  .btn-amount {
+    font-size: 18px;
+  }
+  
+  .quick-bets {
+    gap: 6px;
+  }
+  
+  .quick-bet-btn {
+    padding: 8px 14px;
+    font-size: 11px;
+  }
+  
+  .auto-cashout {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .quick-multipliers {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
