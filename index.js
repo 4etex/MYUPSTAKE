@@ -1597,11 +1597,17 @@ app.post('/api/bet', rateLimit(true), (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     status: 'ok',
+    timestamp: Date.now(),
     state: state,
     roundId: currentRound?.id || null
   });
+});
+
+// Простой ping endpoint для проверки доступности
+app.get('/ping', (req, res) => {
+  res.status(200).json({ pong: Date.now() });
 });
 
 // Корневой маршрут и SPA fallback
