@@ -69,6 +69,7 @@
     "test": "craco test",
     "server": "node index.js",
     "dev:server": "node index.js",
+    "dev": "npm run build && node index.js",
     "vercel-build": "npm run build"
   },
   "browserslist": {

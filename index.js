@@ -268,6 +268,16 @@ const io = new Server(server, {
 const publicPath = path.join(__dirname, 'build');
 if (!fs.existsSync(publicPath)) {
   console.warn('⚠️ Build folder not found! Run "npm run build" first.');
+  console.warn(`   Looking for: ${publicPath}`);
+  console.warn(`   Current dir: ${__dirname}`);
+} else {
+  console.log(`✅ Build folder found: ${publicPath}`);
+  const indexFile = path.join(publicPath, 'index.html');
+  if (fs.existsSync(indexFile)) {
+    console.log(`✅ index.html found: ${indexFile}`);
+  } else {
+    console.warn(`⚠️ index.html not found in build folder!`);
+  }
 }
 app.use(express.static(publicPath));
 
@@ -1750,6 +1760,34 @@ app.get('/api/withdraw/status/:oddserId', rateLimit(), (req, res) => {
     logSecurityEvent('WITHDRAW_STATUS_ERROR', { error: error.message, ip: req.ip });
     res.status(500).json({ ok: false, error: 'Ошибка' });
   }
+});
+
+// ============================================
+// SPA FALLBACK - Все не-API маршруты отдают index.html
+// ============================================
+app.get('*', (req, res, next) => {
+  // Пропускаем API маршруты
+  if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io/')) {
+    return next();
+  }
+  
+  // Для всех остальных маршрутов отдаем index.html (SPA)
+  const indexFile = path.join(publicPath, 'index.html');
+  if (fs.existsSync(indexFile)) {
+    return res.sendFile(indexFile);
+  }
+  
+  // Fallback если build папки нет
+  return res.status(200).send(`
+    <html>
+      <head><title>MYUPSTAKE Casino</title></head>
+      <body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:50px;">
+        <h1>🎰 MYUPSTAKE Casino</h1>
+        <p>Сервер работает! Но React приложение не собрано.</p>
+        <p>Запустите: <code>npm run build</code></p>
+      </body>
+    </html>
+  `);
 });
 
 // ============================================
