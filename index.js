@@ -690,12 +690,12 @@ function calculateDynamicCrashPoint(bets) {
   }
   
   // ═══════════════════════════════════════════════════════════
-  // РЕЖИМ 5: НАКАЗАНИЕ ГОРЯЧИХ ИГРОКОВ
+  // РЕЖИМ 5: НАКАЗАНИЕ ГОРЯЧИХ ИГРОКОВ (менее агрессивно)
   // ═══════════════════════════════════════════════════════════
   if (analysis.hasHotPlayers) {
     const penalty = Math.random();
-    if (penalty < 0.65) { // 65% шанс слива
-      const drainMultiplier = 1.00 + Math.random() * 0.35; // 1.00-1.35x
+    if (penalty < 0.35) { // 35% шанс слива (было 65%)
+      const drainMultiplier = 1.30 + Math.random() * 0.50; // 1.30-1.80x (было 1.00-1.35x)
       console.log(`   🔥 ГОРЯЧИЕ ИГРОКИ В РАУНДЕ: ${analysis.hotPlayers.join(', ')}`);
       console.log(`   🎯 PENALTY MODE: ${drainMultiplier.toFixed(2)}x`);
       console.log(`🎰 ════════════════════════════════════════\n`);
@@ -704,13 +704,14 @@ function calculateDynamicCrashPoint(bets) {
   }
   
   // ═══════════════════════════════════════════════════════════
-  // РЕЖИМ 6: АДАПТИВНАЯ КОРРЕКЦИЯ (серии проигрышей казино)
+  // РЕЖИМ 6: АДАПТИВНАЯ КОРРЕКЦИЯ (серии проигрышей казино) - менее агрессивно
   // ═══════════════════════════════════════════════════════════
   if (consecutiveLosses >= CASINO_CONFIG.ADAPTIVE.LOSS_STREAK_TRIGGER) {
-    const aggressiveMultiplier = 1.00 + Math.random() * 0.50; // 1.00-1.50x
+    // Если проиграли много - даем более справедливые множители
+    const aggressiveMultiplier = 1.50 + Math.random() * 1.50; // 1.50-3.00x (было 1.00-1.50x)
     console.log(`   ⚠️ АДАПТИВНАЯ КОРРЕКЦИЯ!`);
     console.log(`   📉 Казино проиграло ${consecutiveLosses} раундов подряд`);
-    console.log(`   🎯 АГРЕССИВНЫЙ РЕЖИМ: ${aggressiveMultiplier.toFixed(2)}x`);
+    console.log(`   🎯 КОРРЕКЦИЯ: ${aggressiveMultiplier.toFixed(2)}x`);
     console.log(`🎰 ════════════════════════════════════════\n`);
     return parseFloat(aggressiveMultiplier.toFixed(2));
   }
