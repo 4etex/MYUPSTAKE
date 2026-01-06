@@ -33,7 +33,7 @@ COPY --from=builder /app/build ./build
 COPY index.js ./
 COPY db.json* ./
 
-# Expose port
+# Expose port (Railway will set PORT env var)
 EXPOSE 3001
 
 # Start server

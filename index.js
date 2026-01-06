@@ -2009,7 +2009,7 @@ if (TELEGRAM_TOKEN) {
 // ЗАПУСК СЕРВЕРА
 // ============================================
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🎰 ========== CRASH CASINO ==========`);
   console.log(`🌐 Сервер: http://localhost:${PORT}`);
   console.log(`💰 Банк: ${houseBank} / ${TARGET_BANK} (${(houseBank/TARGET_BANK*100).toFixed(2)}%)`);
