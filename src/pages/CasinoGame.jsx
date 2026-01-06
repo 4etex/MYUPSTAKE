@@ -571,6 +571,26 @@ const CasinoGame = () => {
           />
         </div>
         
+        {/* ONE BIG ACTION BUTTON - под суммой ставки */}
+        <button 
+          className={`main-action-btn ${hasBet && state === 'playing' ? 'cashout' : 'bet'} ${nextRoundBet ? 'queued' : ''}`}
+          onClick={handleMainAction}
+          disabled={hasBet && state !== 'playing'}
+        >
+          {hasBet && state === 'playing' ? (
+            <>
+              <span className="btn-text">ЗАБРАТЬ</span>
+              <span className="btn-amount">{Math.round((currentBetAmount || 0) * (currentMultiplier || 1))}</span>
+            </>
+          ) : nextRoundBet ? (
+            <span className="btn-text">СТАВКА В ОЧЕРЕДИ ({nextRoundBet})</span>
+          ) : hasBet ? (
+            <span className="btn-text">ЖДЁМ РАУНД...</span>
+          ) : (
+            <span className="btn-text">ПОСТАВИТЬ</span>
+          )}
+        </button>
+        
         {/* Quick bet buttons */}
         <div className="quick-bets">
           {quickBets.map((amount) => (
@@ -618,26 +638,6 @@ const CasinoGame = () => {
             ))}
           </div>
         </div>
-        
-        {/* ONE BIG ACTION BUTTON */}
-        <button 
-          className={`main-action-btn ${hasBet && state === 'playing' ? 'cashout' : 'bet'} ${nextRoundBet ? 'queued' : ''}`}
-          onClick={handleMainAction}
-          disabled={hasBet && state !== 'playing'}
-        >
-          {hasBet && state === 'playing' ? (
-            <>
-              <span className="btn-text">ЗАБРАТЬ</span>
-              <span className="btn-amount">{Math.round(currentBetAmount * currentMultiplier)}</span>
-            </>
-          ) : nextRoundBet ? (
-            <span className="btn-text">СТАВКА В ОЧЕРЕДИ ({nextRoundBet})</span>
-          ) : hasBet ? (
-            <span className="btn-text">ЖДЁМ РАУНД...</span>
-          ) : (
-            <span className="btn-text">ПОСТАВИТЬ</span>
-          )}
-        </button>
       </div>
 
       {/* Log section */}
