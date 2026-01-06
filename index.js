@@ -405,31 +405,31 @@ const CASINO_CONFIG = {
     HOT_PLAYER_PROFIT_THRESHOLD: 5000,
   },
   
-  // РАСПРЕДЕЛЕНИЕ МНОЖИТЕЛЕЙ (когда есть ставки)
+  // РАСПРЕДЕЛЕНИЕ МНОЖИТЕЛЕЙ (когда есть ставки) - БОЛЕЕ СПРАВЕДЛИВОЕ
   MULTIPLIER_DISTRIBUTION: {
     // Фаза накопления (банк < 50% цели)
     ACCUMULATION: {
-      VERY_LOW: { weight: 40, range: [1.00, 1.30] },  // 40% - очень низкие
-      LOW: { weight: 35, range: [1.30, 2.00] },       // 35%
-      MEDIUM: { weight: 15, range: [2.00, 4.00] },    // 15%
-      HIGH: { weight: 7, range: [4.00, 8.00] },       // 7%
-      VERY_HIGH: { weight: 3, range: [8.00, 20.00] }  // 3%
+      VERY_LOW: { weight: 25, range: [1.20, 1.80] },  // 25% - низкие (повышено с 1.00)
+      LOW: { weight: 30, range: [1.80, 3.00] },       // 30% - средние
+      MEDIUM: { weight: 25, range: [3.00, 6.00] },     // 25% - хорошие
+      HIGH: { weight: 15, range: [6.00, 12.00] },      // 15% - высокие
+      VERY_HIGH: { weight: 5, range: [12.00, 30.00] }  // 5% - очень высокие
     },
     // Фаза баланса (банк 50-100% цели)
     BALANCED: {
-      VERY_LOW: { weight: 30, range: [1.00, 1.50] },
-      LOW: { weight: 35, range: [1.50, 2.50] },
-      MEDIUM: { weight: 20, range: [2.50, 5.00] },
-      HIGH: { weight: 10, range: [5.00, 12.00] },
-      VERY_HIGH: { weight: 5, range: [12.00, 30.00] }
+      VERY_LOW: { weight: 15, range: [1.30, 2.00] },   // 15% - низкие
+      LOW: { weight: 25, range: [2.00, 3.50] },       // 25% - средние
+      MEDIUM: { weight: 30, range: [3.50, 7.00] },    // 30% - хорошие
+      HIGH: { weight: 20, range: [7.00, 15.00] },      // 20% - высокие
+      VERY_HIGH: { weight: 10, range: [15.00, 50.00] } // 10% - очень высокие
     },
-    // Фаза достижения цели (банк > 100% цели)
+    // Фаза достижения цели (банк > 100% цели) - МАКСИМАЛЬНО СПРАВЕДЛИВО
     ACHIEVED: {
-      VERY_LOW: { weight: 20, range: [1.00, 2.00] },
-      LOW: { weight: 30, range: [2.00, 3.50] },
-      MEDIUM: { weight: 30, range: [3.50, 8.00] },
-      HIGH: { weight: 15, range: [8.00, 20.00] },
-      VERY_HIGH: { weight: 5, range: [20.00, 100.00] }
+      VERY_LOW: { weight: 10, range: [1.50, 2.50] },   // 10% - низкие
+      LOW: { weight: 20, range: [2.50, 4.00] },       // 20% - средние
+      MEDIUM: { weight: 30, range: [4.00, 10.00] },   // 30% - хорошие
+      HIGH: { weight: 25, range: [10.00, 25.00] },     // 25% - высокие
+      VERY_HIGH: { weight: 15, range: [25.00, 100.00] } // 15% - очень высокие
     }
   }
 };
@@ -660,30 +660,30 @@ function calculateDynamicCrashPoint(bets) {
   }
   
   // ═══════════════════════════════════════════════════════════
-  // РЕЖИМ 3: КРИТИЧЕСКАЯ СИТУАЦИЯ (ставки > 30% банка)
+  // РЕЖИМ 3: КРИТИЧЕСКАЯ СИТУАЦИЯ (ставки > 30% банка) - менее агрессивно
   // ═══════════════════════════════════════════════════════════
   if (analysis.isCritical) {
-    const emergencyMultiplier = 1.00 + Math.random() * 0.20; // 1.00-1.20x
+    const emergencyMultiplier = 1.30 + Math.random() * 0.70; // 1.30-2.00x (было 1.00-1.20x)
     console.log(`   🚨 КРИТИЧЕСКАЯ СИТУАЦИЯ!`);
     console.log(`   💰 Ставки: ${analysis.totalBets.toFixed(0)} (${(analysis.totalBets / houseBank * 100).toFixed(1)}% банка)`);
-    console.log(`   ⚡ ЭКСТРЕННЫЙ СЛИВ: ${emergencyMultiplier.toFixed(2)}x`);
+    console.log(`   ⚡ ЗАЩИТА: ${emergencyMultiplier.toFixed(2)}x`);
     console.log(`🎰 ════════════════════════════════════════\n`);
     return parseFloat(emergencyMultiplier.toFixed(2));
   }
   
   // ═══════════════════════════════════════════════════════════
-  // РЕЖИМ 4: ЗАЩИТА ОТ КИТОВ (большие ставки)
+  // РЕЖИМ 4: ЗАЩИТА ОТ КИТОВ (большие ставки) - более справедливо
   // ═══════════════════════════════════════════════════════════
   if (analysis.hasWhale) {
     const maxAffordable = (houseBank + analysis.totalBets) / analysis.maxBet;
     
-    // Если большая ставка угрожает банку
+    // Если большая ставка угрожает банку - даем минимум 1.5x вместо 1.1x
     if (maxAffordable < 2.5) {
-      const whaleCrash = CASINO_CONFIG.BANK_PROTECTION.WHALE_MAX_MULTIPLIER;
+      const whaleCrash = Math.max(1.50, Math.min(maxAffordable * 0.85, 2.00)); // 1.50-2.00x
       console.log(`   🐋 ЗАЩИТА ОТ КИТА!`);
       console.log(`   💰 Ставка кита: ${analysis.maxBet.toFixed(0)} (${(analysis.maxBet / houseBank * 100).toFixed(1)}% банка)`);
       console.log(`   ⚡ Максимум можем выплатить: ${maxAffordable.toFixed(2)}x`);
-      console.log(`   🛡️ АНТИ-КИТ СЛИВ: ${whaleCrash.toFixed(2)}x`);
+      console.log(`   🛡️ ЗАЩИТА: ${whaleCrash.toFixed(2)}x`);
       console.log(`🎰 ════════════════════════════════════════\n`);
       return parseFloat(whaleCrash.toFixed(2));
     }
@@ -737,8 +737,12 @@ function calculateDynamicCrashPoint(bets) {
   // Генерируем базовый множитель
   let crashMultiplier = weightedRandomChoice(distribution);
   
-  // Применяем House Edge
-  crashMultiplier = applyHouseEdge(crashMultiplier);
+  // Добавляем дополнительный рандом для справедливости (±10%)
+  const randomVariation = 0.9 + Math.random() * 0.2; // 0.9-1.1
+  crashMultiplier = crashMultiplier * randomVariation;
+  
+  // Применяем House Edge (но менее агрессивно)
+  crashMultiplier = crashMultiplier * (1 - CASINO_CONFIG.HOUSE_EDGE * 0.5); // 6% вместо 12%
   
   // Финальная проверка: можем ли мы это выплатить?
   const maxPossiblePayout = analysis.totalBets * crashMultiplier;
