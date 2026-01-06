@@ -961,15 +961,18 @@
   
   .casino-header {
     padding: 12px;
-    gap: 8px;
+    gap: 10px;
+  }
+  
+  .header-top-row {
     flex-wrap: wrap;
+    gap: 10px;
   }
   
   .header-right {
     gap: 6px;
     width: 100%;
     justify-content: flex-end;
-    order: 3;
   }
   
   .logo {
@@ -992,6 +995,13 @@
   
   .online-text {
     font-size: 12px;
+  }
+  
+  .balance-container-top {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+    margin-top: 0;
   }
   
   .balance-container {
