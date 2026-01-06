@@ -39,15 +39,21 @@
 /* HEADER */
 .casino-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: 16px;
   background: var(--bg-card);
   border-radius: 16px;
   border: 1px solid var(--border-gray);
   width: 100%;
   box-sizing: border-box;
-  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
   gap: 12px;
 }
 
@@ -156,6 +162,16 @@
   flex-shrink: 0;
   min-width: 0;
   max-width: 100%;
+}
+
+.balance-container-top {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+  order: 2;
 }
 
 .balance {

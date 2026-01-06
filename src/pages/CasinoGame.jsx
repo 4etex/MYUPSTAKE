@@ -453,29 +453,24 @@ const CasinoGame = () => {
     <div className="casino-app">
       {/* Header */}
       <header className="casino-header">
-        <div className="logo">
-          <div className="logo-icon">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_tg-casino-fonts/artifacts/0txpkq2b_unnamed%20%2815%29%282%29.png" 
-              alt="Logo" 
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                borderRadius: '8px'
-              }}
-            />
-          </div>
-          <span className="logo-text">MYUPSTAKE</span>
-        </div>
-        
-        <div className="header-right">
-          <div className="online-indicator-top">
-            <span className="online-dot"></span>
-            <span className="online-text">{onlineCount}</span>
+        <div className="header-top-row">
+          <div className="logo">
+            <div className="logo-icon">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_tg-casino-fonts/artifacts/0txpkq2b_unnamed%20%2815%29%282%29.png" 
+                alt="Logo" 
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '8px'
+                }}
+              />
+            </div>
+            <span className="logo-text">MYUPSTAKE</span>
           </div>
           
-          <div className="balance-container">
+          <div className="balance-container-top">
             <button 
               className="withdraw-btn-header"
               onClick={() => setShowWithdrawModal(true)}
@@ -492,6 +487,13 @@ const CasinoGame = () => {
             >
               +
             </button>
+          </div>
+        </div>
+        
+        <div className="header-right">
+          <div className="online-indicator-top">
+            <span className="online-dot"></span>
+            <span className="online-text">{onlineCount}</span>
           </div>
         </div>
       </header>

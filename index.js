@@ -583,45 +583,48 @@ function calculateSmartCrashPoint(bets) {
   }
   
   // ============================================
-  // РЕЖИМ 4: НАКОПЛЕНИЕ (основной режим ~82% времени)
+  // РЕЖИМ 4: НАКОПЛЕНИЕ (основной режим ~70% времени)
+  // Менее палевно - чаще доходит до 2-3x
   // ============================================
   let collectCrash;
   const collectRoll = Math.random();
   
   if (houseBank < 10000) {
-    // Банк маленький - жёсткое накопление
-    if (collectRoll < 0.5) {
-      collectCrash = 1.00 + Math.random() * 0.10; // 50%: 1.00-1.10x
-    } else if (collectRoll < 0.8) {
-      collectCrash = 1.10 + Math.random() * 0.20; // 30%: 1.10-1.30x
+    // Банк маленький - но всё равно доходим до 2-3x
+    if (collectRoll < 0.3) {
+      collectCrash = 1.20 + Math.random() * 0.30; // 30%: 1.20-1.50x
+    } else if (collectRoll < 0.6) {
+      collectCrash = 1.50 + Math.random() * 0.50; // 30%: 1.50-2.00x
+    } else if (collectRoll < 0.85) {
+      collectCrash = 2.00 + Math.random() * 0.80; // 25%: 2.00-2.80x
     } else {
-      collectCrash = 1.30 + Math.random() * 0.30; // 20%: 1.30-1.60x
+      collectCrash = 2.80 + Math.random() * 0.70; // 15%: 2.80-3.50x
     }
     console.log(`   💼 НАКОПЛЕНИЕ (низкий банк): ${collectCrash.toFixed(2)}x`);
     
   } else if (houseBank < 100000) {
-    // Банк средний - умеренное накопление
-    if (collectRoll < 0.4) {
-      collectCrash = 1.00 + Math.random() * 0.15; // 40%: 1.00-1.15x
-    } else if (collectRoll < 0.7) {
-      collectCrash = 1.15 + Math.random() * 0.35; // 30%: 1.15-1.50x
-    } else if (collectRoll < 0.9) {
-      collectCrash = 1.50 + Math.random() * 0.50; // 20%: 1.50-2.00x
+    // Банк средний - чаще до 2-3x
+    if (collectRoll < 0.25) {
+      collectCrash = 1.30 + Math.random() * 0.40; // 25%: 1.30-1.70x
+    } else if (collectRoll < 0.5) {
+      collectCrash = 1.70 + Math.random() * 0.60; // 25%: 1.70-2.30x
+    } else if (collectRoll < 0.75) {
+      collectCrash = 2.30 + Math.random() * 0.70; // 25%: 2.30-3.00x
     } else {
-      collectCrash = 2.00 + Math.random() * 1.00; // 10%: 2.00-3.00x
+      collectCrash = 3.00 + Math.random() * 1.00; // 25%: 3.00-4.00x
     }
     console.log(`   💼 НАКОПЛЕНИЕ (средний банк): ${collectCrash.toFixed(2)}x`);
     
   } else {
-    // Банк большой - можем позволить больше
-    if (collectRoll < 0.3) {
-      collectCrash = 1.00 + Math.random() * 0.20; // 30%: 1.00-1.20x
-    } else if (collectRoll < 0.6) {
-      collectCrash = 1.20 + Math.random() * 0.80; // 30%: 1.20-2.00x
-    } else if (collectRoll < 0.85) {
-      collectCrash = 2.00 + Math.random() * 1.50; // 25%: 2.00-3.50x
+    // Банк большой - часто до 2-4x
+    if (collectRoll < 0.2) {
+      collectCrash = 1.50 + Math.random() * 0.50; // 20%: 1.50-2.00x
+    } else if (collectRoll < 0.5) {
+      collectCrash = 2.00 + Math.random() * 0.80; // 30%: 2.00-2.80x
+    } else if (collectRoll < 0.8) {
+      collectCrash = 2.80 + Math.random() * 0.90; // 30%: 2.80-3.70x
     } else {
-      collectCrash = 3.50 + Math.random() * 2.00; // 15%: 3.50-5.50x
+      collectCrash = 3.70 + Math.random() * 1.30; // 20%: 3.70-5.00x
     }
     console.log(`   💼 НАКОПЛЕНИЕ (большой банк): ${collectCrash.toFixed(2)}x`);
   }
