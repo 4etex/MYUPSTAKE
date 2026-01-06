@@ -107,38 +107,43 @@ const DepositModal = ({ isOpen, onClose, userId, onBalanceUpdate }) => {
         };
         
         // Открываем инвойс через Telegram WebApp
-        window.Telegram.WebApp.openInvoice(invoice, (status) => {
-          if (status === 'paid') {
-            // Получаем payment info
-            const paymentInfo = window.Telegram.WebApp.paymentInfo;
-            
-            // Подтверждаем оплату
-            fetch(`${BACKEND_URL}/api/deposit/stars/confirm`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                userId, 
-                invoiceId: data.invoiceId,
-                telegramPaymentId: paymentInfo?.payment_id || 'webapp_payment'
-              })
-            }).then(res => res.json()).then(confirmData => {
-              if (confirmData.ok) {
-                if (onBalanceUpdate) onBalanceUpdate(confirmData.newBalance);
-                window.Telegram.WebApp.showAlert(`✅ Успешно! +${confirmData.stars} ⭐ зачислено!`);
-              } else {
-                window.Telegram.WebApp.showAlert('Ошибка подтверждения: ' + confirmData.error);
-              }
+        if (window.Telegram?.WebApp?.openInvoice) {
+          window.Telegram.WebApp.openInvoice(invoice, (status) => {
+            if (status === 'paid') {
+              // Получаем payment info
+              const paymentInfo = window.Telegram.WebApp.paymentInfo;
+              
+              // Подтверждаем оплату
+              fetch(`${BACKEND_URL}/api/deposit/stars/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  userId, 
+                  invoiceId: data.invoiceId,
+                  telegramPaymentId: paymentInfo?.payment_id || 'webapp_payment'
+                })
+              }).then(res => res.json()).then(confirmData => {
+                if (confirmData.ok) {
+                  if (onBalanceUpdate) onBalanceUpdate(confirmData.newBalance || 0);
+                  window.Telegram.WebApp.showAlert(`✅ Успешно! +${confirmData.stars || 0} ⭐ зачислено!`);
+                  onClose();
+                } else {
+                  window.Telegram.WebApp.showAlert('Ошибка подтверждения: ' + (confirmData.error || 'Неизвестная ошибка'));
+                }
+                setLoading(false);
+              }).catch(err => {
+                console.error('Confirm error:', err);
+                window.Telegram.WebApp.showAlert('Ошибка соединения');
+                setLoading(false);
+              });
+            } else {
               setLoading(false);
-              onClose();
-            }).catch(err => {
-              console.error('Confirm error:', err);
-              window.Telegram.WebApp.showAlert('Ошибка соединения');
-              setLoading(false);
-            });
-          } else {
-            setLoading(false);
-          }
-        });
+            }
+          });
+        } else {
+          alert('Telegram WebApp API недоступен');
+          setLoading(false);
+        }
       } else {
         alert('Ошибка: ' + data.error);
         setLoading(false);

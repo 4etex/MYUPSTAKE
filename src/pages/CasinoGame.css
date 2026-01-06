@@ -99,6 +99,24 @@
   height: 36px;
 }
 
+/* ONLINE INDICATOR TOP RIGHT */
+.online-indicator-top {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-gray);
+  z-index: 100;
+  min-width: 45px;
+  height: 32px;
+}
+
 .online-dot {
   width: 8px;
   height: 8px;
@@ -1017,10 +1035,25 @@
     font-size: 14px;
     width: 100%;
     box-sizing: border-box;
+    margin-top: 12px;
+    margin-bottom: 12px;
   }
   
   .btn-amount {
     font-size: 16px;
+  }
+  
+  .online-indicator-top {
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .online-indicator-top .online-dot {
+    width: 6px;
+    height: 6px;
   }
   
   .quick-bets {

@@ -443,8 +443,11 @@ const CasinoGame = () => {
     }
   };
 
-  // Format balance (round to integer)
-  const formatBalance = (val) => Math.round(val);
+  // Format balance (round to integer, handle NaN)
+  const formatBalance = (val) => {
+    if (val === null || val === undefined || isNaN(val)) return 0;
+    return Math.round(val);
+  };
 
   return (
     <div className="casino-app">
@@ -467,7 +470,7 @@ const CasinoGame = () => {
         </div>
         
         <div className="header-right">
-          <div className="online-indicator">
+          <div className="online-indicator-top">
             <span className="online-dot"></span>
             <span className="online-text">{onlineCount}</span>
           </div>
