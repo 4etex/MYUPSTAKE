@@ -278,8 +278,21 @@ if (!fs.existsSync(publicPath)) {
   } else {
     console.warn(`⚠️ index.html not found in build folder!`);
   }
+  
+  // Проверяем наличие статических файлов
+  const staticPath = path.join(publicPath, 'static');
+  if (fs.existsSync(staticPath)) {
+    console.log(`✅ Static folder found: ${staticPath}`);
+  }
 }
-app.use(express.static(publicPath));
+
+// Настройка статических файлов с явными опциями
+app.use(express.static(publicPath, {
+  maxAge: '1d', // Кэширование на 1 день
+  etag: true,
+  lastModified: true,
+  index: false // Не используем index автоматически, обрабатываем вручную
+}));
 
 // Простая работа с JSON файлом
 const dbFile = path.join(__dirname, 'db.json');
@@ -1764,17 +1777,22 @@ app.get('/api/withdraw/status/:oddserId', rateLimit(), (req, res) => {
 
 // ============================================
 // SPA FALLBACK - Все не-API маршруты отдают index.html
-// ВАЖНО: Этот маршрут должен быть ПОСЛЕДНИМ, после всех API маршрутов
-// Express 5 требует именованный параметр для catch-all маршрута
+// ВАЖНО: Этот middleware должен быть ПОСЛЕДНИМ, после всех API маршрутов
+// Используем middleware подход для Express 5
 // ============================================
-app.get('/*splat', (req, res, next) => {
+app.use((req, res, next) => {
+  // Если ответ уже отправлен, пропускаем
+  if (res.headersSent) {
+    return next();
+  }
+  
   // Пропускаем API маршруты
   if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io/')) {
     return next();
   }
   
   // Пропускаем статические файлы (CSS, JS, изображения и т.д.)
-  // Express.static должен обработать их первым, но на всякий случай проверяем
+  // Express.static должен обработать их первым
   if (req.path.match(/\.(js|css|map|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
     return next();
   }
