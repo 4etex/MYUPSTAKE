@@ -1995,7 +1995,14 @@ if (TELEGRAM_TOKEN) {
       console.log('⚠️ ADMIN_TELEGRAM_ID не установлен - админ-команды недоступны');
     }
   }).catch(err => {
-    console.error('❌ Ошибка запуска Telegram бота:', err);
+    // Обработка конфликта (409) - другой экземпляр бота уже запущен
+    if (err.response && err.response.error_code === 409) {
+      console.warn('⚠️ Telegram бот: Другой экземпляр уже запущен (возможно локально)');
+      console.warn('💡 Остановите локальный экземпляр бота или используйте webhook в продакшене');
+      // Не падаем, просто предупреждаем
+    } else {
+      console.error('❌ Ошибка запуска Telegram бота:', err);
+    }
   });
 
   // Graceful stop
@@ -2011,7 +2018,7 @@ if (TELEGRAM_TOKEN) {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🎰 ========== CRASH CASINO ==========`);
-  console.log(`🌐 Сервер: http://localhost:${PORT}`);
+  console.log(`🌐 Сервер: http://0.0.0.0:${PORT}`);
   console.log(`💰 Банк: ${houseBank} / ${TARGET_BANK} (${(houseBank/TARGET_BANK*100).toFixed(2)}%)`);
   console.log(`📊 Статус: ${getBankStatus()}`);
   console.log(`\n📋 АЛГОРИТМ:`);
