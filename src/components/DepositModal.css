@@ -314,24 +314,34 @@
 
 /* Mobile */
 @media (max-width: 480px) {
+  .deposit-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  
   .deposit-modal {
-    max-height: 85vh;
+    max-height: 90vh;
     border-radius: 20px 20px 0 0;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     max-width: 100%;
+    margin: 0;
   }
   
-  .deposit-overlay {
-    align-items: flex-end;
-    padding: 0;
+  .deposit-header {
+    padding: 16px 20px;
+  }
+  
+  .deposit-header h2 {
+    font-size: 18px;
   }
   
   .payment-methods {
     flex-direction: column;
     gap: 10px;
+    padding: 16px 20px;
   }
   
   .method-btn {
@@ -345,8 +355,24 @@
     font-size: 24px;
   }
   
-  .method-btn > div {
-    text-align: left;
+  .packages-list {
+    padding: 12px 20px;
+    max-height: 50vh;
+  }
+  
+  .package-item {
+    padding: 14px 16px;
+  }
+  
+  .stars-amount {
+    font-size: 18px;
+  }
+  
+  .pay-btn {
+    margin: 16px 20px;
+    width: calc(100% - 40px);
+    padding: 16px 20px;
+    font-size: 15px;
   }
 }
 

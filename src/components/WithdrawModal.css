@@ -278,19 +278,52 @@
 
 /* Mobile */
 @media (max-width: 480px) {
+  .withdraw-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  
   .withdraw-modal {
-    max-height: 85vh;
+    max-height: 90vh;
     border-radius: 20px 20px 0 0;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     max-width: 100%;
+    margin: 0;
   }
   
-  .withdraw-overlay {
-    align-items: flex-end;
-    padding: 0;
+  .withdraw-header {
+    padding: 16px 20px;
+  }
+  
+  .withdraw-header h2 {
+    font-size: 18px;
+  }
+  
+  .withdraw-form {
+    padding: 20px;
+    gap: 16px;
+  }
+  
+  .form-group input {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+  
+  .withdraw-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+  
+  .withdraw-history {
+    padding: 12px 20px;
+    max-height: 50vh;
+  }
+  
+  .history-item {
+    padding: 14px;
   }
 }
 

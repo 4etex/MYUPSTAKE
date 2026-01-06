@@ -998,10 +998,10 @@ function startPlay() {
   console.log(`   📊 Потенц. ${potentialProfit >= 0 ? 'прибыль' : 'выплата'}: ${Math.abs(potentialProfit).toFixed(0)}`);
   console.log(`🎰 ==========================================\n`);
 
-  const tickMs = 200; // Обновление каждые 200мс
+  const tickMs = 100; // Обновление каждые 100мс (ускорено)
   gameInterval = setInterval(() => {
-    // Экспоненциальный рост множителя (как в настоящих crash играх)
-    currentRound.multiplier = parseFloat((currentRound.multiplier + 0.01 * (1 + currentRound.multiplier / 10)).toFixed(2));
+    // Экспоненциальный рост множителя (ускорено)
+    currentRound.multiplier = parseFloat((currentRound.multiplier + 0.015 * (1 + currentRound.multiplier / 8)).toFixed(2));
     
     io.emit('multiplier', { multiplier: currentRound.multiplier });
 
