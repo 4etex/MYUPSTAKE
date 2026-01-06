@@ -287,11 +287,27 @@ if (!fs.existsSync(publicPath)) {
 }
 
 // Настройка статических файлов
+// ВАЖНО: Это должно быть ДО всех маршрутов, чтобы статические файлы обрабатывались первыми
 app.use(express.static(publicPath, {
   maxAge: '1d', // Кэширование на 1 день
   etag: true,
-  lastModified: true
+  lastModified: true,
+  index: 'index.html' // Указываем index.html как индексный файл
 }));
+
+// Логирование для диагностики статических файлов
+app.use((req, res, next) => {
+  // Логируем только статические файлы для диагностики
+  if (req.path.match(/\.(js|css|map|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+    const filePath = path.join(publicPath, req.path);
+    if (fs.existsSync(filePath)) {
+      console.log(`✅ Serving static file: ${req.path}`);
+    } else {
+      console.warn(`⚠️ Static file not found: ${req.path} (looking for: ${filePath})`);
+    }
+  }
+  next();
+});
 
 // Простая работа с JSON файлом
 const dbFile = path.join(__dirname, 'db.json');
@@ -1610,7 +1626,7 @@ app.get('/ping', (req, res) => {
   res.status(200).json({ pong: Date.now() });
 });
 
-// Корневой маршрут и SPA fallback
+// Корневой маршрут
 app.get('/', (req, res) => {
   const indexFile = path.join(publicPath, 'index.html');
   if (fs.existsSync(indexFile)) {
@@ -1782,11 +1798,15 @@ app.get('/api/withdraw/status/:oddserId', rateLimit(), (req, res) => {
 
 // ============================================
 // SPA FALLBACK - Все не-API маршруты отдают index.html
-// ВАЖНО: Этот маршрут должен быть ПОСЛЕДНИМ, после всех API маршрутов
-// Используем app.all для обработки всех методов, но только для не-API путей
+// ВАЖНО: Этот middleware должен быть ПОСЛЕДНИМ, после всех маршрутов
 // ============================================
 app.use((req, res, next) => {
-  // Если это API или Socket.io - пропускаем
+  // Если ответ уже отправлен - пропускаем
+  if (res.headersSent) {
+    return next();
+  }
+  
+  // Если это API или Socket.io - пропускаем (должны быть обработаны выше)
   if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io/')) {
     return next();
   }
@@ -1796,7 +1816,7 @@ app.use((req, res, next) => {
     return next();
   }
   
-  // Если это GET запрос и не корневой путь - отдаем index.html
+  // Если это GET запрос и не корневой путь (корневой уже обработан выше) - отдаем index.html
   if (req.method === 'GET' && req.path !== '/') {
     const indexFile = path.join(publicPath, 'index.html');
     if (fs.existsSync(indexFile)) {
@@ -1804,7 +1824,7 @@ app.use((req, res, next) => {
     }
   }
   
-  // Для остальных случаев - пропускаем дальше
+  // Для остальных случаев - пропускаем дальше (вернет 404)
   next();
 });
 
